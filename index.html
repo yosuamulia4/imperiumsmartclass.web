@@ -4,339 +4,144 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Imperium Smart Class | Menuju Garis Finish</title>
-    
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
-        
-        body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-        }
-
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(234, 179, 8, 0.2); border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(234, 179, 8, 0.5); }
-
-        .animate-pulse-slow {
-            animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-        }
-        @keyframes pulse {
-            0%, 100% { opacity: 0.1; }
-            50% { opacity: 0.3; }
-        }
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #1a0b14; color: #e2e8f0; }
+        .glass { background: rgba(45, 10, 30, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
+        .gold-gradient { background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%); }
     </style>
 </head>
-<body class="bg-[#1a0b14]">
-    <div id="root"></div>
+<body>
 
-    <script type="text/babel">
-        const { useState, useEffect, useRef } = React;
-        const { 
-            Shield, Users, Target, Zap, Phone, MapPin, CheckCircle, 
-            Clock, Star, ChevronRight, Menu, X, Instagram, Brain, 
-            MessageSquare, RefreshCw, Send, Loader 
-        } = lucide;
-
-        function App() {
-            const [isScrolled, setIsScrolled] = useState(false);
-            const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-            const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0 });
-
-            // --- AI STATE ---
-            const [aiMode, setAiMode] = useState('drill'); 
-            const [drillCategory, setDrillCategory] = useState('TWK');
-            const [drillData, setDrillData] = useState(null);
-            const [userAnswer, setUserAnswer] = useState(null);
-            const [chatHistory, setChatHistory] = useState([
-                { role: 'model', text: 'Siap! Saya Komandan AI Imperium. Ada yang bisa saya bantu untuk strategi persiapanmu, Calon Taruna?' }
-            ]);
-            const [chatInput, setChatInput] = useState('');
-            const [isLoading, setIsLoading] = useState(false);
-            const chatEndRef = useRef(null);
-
-            // --- GANTI API KEY DI SINI ---
-            const API_KEY = "MASUKKAN_API_KEY_ANDA_DI_SINI";
-
-            const callGemini = async (prompt, isJson = false) => {
-                setIsLoading(true);
-                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
-
-                const systemInstruction = isJson 
-                    ? "Anda adalah instruktur elite untuk persiapan tes TNI/POLRI/Kedinasan. Buatkan 1 soal latihan High Order Thinking Skill (HOTS) yang menantang. Output MURNI JSON tanpa markdown. Struktur: {question, options:[], correctIndex, explanation}"
-                    : "Anda adalah Komandan Mentor di Imperium Smart Class. Jawab dengan tegas, ringkas, memotivasi, dan taktis. Panggil user dengan sebutan 'Calon Taruna' atau 'Siswa'. Fokus pada strategi lulus seleksi.";
-
-                try {
-                    const response = await fetch(url, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            contents: [{ parts: [{ text: prompt }] }],
-                            systemInstruction: { parts: [{ text: systemInstruction }] },
-                            generationConfig: isJson ? { responseMimeType: "application/json" } : {}
-                        })
-                    });
-
-                    const data = await response.json();
-                    setIsLoading(false);
-                    const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-                    return isJson ? JSON.parse(text) : text;
-                } catch (error) {
-                    console.error("AI Error:", error);
-                    setIsLoading(false);
-                    return null;
-                }
-            };
-
-            const handleGenerateDrill = async () => {
-                setDrillData(null);
-                setUserAnswer(null);
-                const prompt = `Buatkan 1 soal pilihan ganda untuk kategori ${drillCategory} (Tes Seleksi Kompetensi Dasar). Pastikan opsi jawaban ada 5 (A-E).`;
-                const data = await callGemini(prompt, true);
-                if (data) setDrillData(data);
-            };
-
-            const handleChatSend = async () => {
-                if (!chatInput.trim() || isLoading) return;
-                const userMsg = chatInput;
-                setChatHistory(prev => [...prev, { role: 'user', text: userMsg }]);
-                setChatInput('');
-                const response = await callGemini(userMsg, false);
-                if (response) setChatHistory(prev => [...prev, { role: 'model', text: response }]);
-            };
-
-            useEffect(() => {
-                chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-            }, [chatHistory]);
-
-            useEffect(() => {
-                const targetDate = new Date('2026-03-01T00:00:00');
-                const interval = setInterval(() => {
-                    const now = new Date();
-                    const difference = targetDate - now;
-                    if (difference > 0) {
-                        setTimeLeft({
-                            days: Math.floor(difference / (1000 * 60 * 60 * 24)),
-                            hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
-                            minutes: Math.floor((difference / 1000 / 60) % 60),
-                        });
-                    }
-                }, 1000);
-                return () => clearInterval(interval);
-            }, []);
-
-            useEffect(() => {
-                const handleScroll = () => setIsScrolled(window.scrollY > 50);
-                window.addEventListener('scroll', handleScroll);
-                return () => window.removeEventListener('scroll', handleScroll);
-            }, []);
-
-            const scrollToSection = (id) => {
-                const element = document.getElementById(id);
-                if (element) {
-                    element.scrollIntoView({ behavior: 'smooth' });
-                    setIsMobileMenuOpen(false);
-                }
-            };
-
-            return (
-                <div className="text-slate-200">
-                    {/* Top Bar */}
-                    <div className="bg-[#2D0A1E] text-white py-2 text-[10px] md:text-xs border-b border-white/10">
-                        <div className="container mx-auto px-4 flex justify-between items-center">
-                            <div className="flex gap-4">
-                                <span className="flex items-center gap-1"><Phone size={12} className="text-yellow-500" /> 0851 8544 3185</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <MapPin size={12} className="text-yellow-500" />
-                                <span className="hidden sm:inline">Ruko Trade Center Blok J No 11, Sagulung</span>
-                                <span className="sm:hidden">Sagulung, Batam</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Navigation */}
-                    <nav className={`sticky top-0 z-50 transition-all duration-300 ${isScrolled ? 'bg-[#1a0b14]/90 backdrop-blur-md py-3 shadow-xl' : 'bg-[#1a0b14] py-5'}`}>
-                        <div className="container mx-auto px-6 flex justify-between items-center">
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 bg-yellow-500 rounded-lg flex items-center justify-center shadow-lg shadow-yellow-500/20">
-                                    <Shield className="text-[#1a0b14]" size={24} />
-                                </div>
-                                <div>
-                                    <h1 className="text-xl font-bold leading-none">IMPERIUM</h1>
-                                    <p className="text-[10px] text-yellow-500 font-bold tracking-widest">SMART CLASS</p>
-                                </div>
-                            </div>
-                            <div className="hidden md:flex items-center gap-8">
-                                {['AI Center', 'Program', 'Keunggulan', 'Lokasi'].map((item) => (
-                                    <button key={item} onClick={() => scrollToSection(item.toLowerCase().replace(' ', '-'))} className="text-xs font-bold hover:text-yellow-500 transition-colors uppercase tracking-wider">
-                                        {item}
-                                    </button>
-                                ))}
-                                <button onClick={() => scrollToSection('ai-center')} className="bg-yellow-500 text-[#1a0b14] px-6 py-2 rounded-full font-bold text-xs hover:scale-105 transition-transform">DAFTAR BATCH 1</button>
-                            </div>
-                            <button className="md:hidden text-yellow-500" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
-                                {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
-                            </button>
-                        </div>
-                    </nav>
-
-                    {/* Hero Section */}
-                    <section className="relative pt-20 pb-32 overflow-hidden">
-                        <div className="container mx-auto px-6 text-center">
-                            <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-yellow-500/10 border border-yellow-500/30 rounded-full mb-8">
-                                <span className="w-2 h-2 bg-yellow-500 rounded-full animate-ping" />
-                                <span className="text-yellow-500 text-[10px] font-bold tracking-widest uppercase">Pusat Pelatihan Taktis Batam</span>
-                            </div>
-                            <h1 className="text-5xl md:text-7xl font-black mb-6 leading-tight">
-                                MENUJU GARIS <span className="text-yellow-500 italic">FINISH</span><br/>DENGAN KEMENANGAN.
-                            </h1>
-                            <p className="text-slate-400 max-w-2xl mx-auto text-lg mb-10">
-                                Spesialis persiapan masuk TNI, POLRI, & Kedinasan. Unggul dalam Karakter, Akademik, dan Fisik melalui sistem pelatihan taktis.
-                            </p>
-                            
-                            {/* Countdown Card */}
-                            <div className="max-w-md mx-auto bg-white/5 border border-white/10 p-6 rounded-3xl backdrop-blur-md mb-12">
-                                <p className="text-xs font-bold text-yellow-500 uppercase tracking-[0.2em] mb-4">Sisa Waktu Promo Batch 1</p>
-                                <div className="flex justify-center gap-8">
-                                    <div><span className="text-4xl font-black">{timeLeft.days}</span><span className="block text-[10px] text-slate-500 uppercase">Hari</span></div>
-                                    <div><span className="text-4xl font-black">{timeLeft.hours}</span><span className="block text-[10px] text-slate-500 uppercase">Jam</span></div>
-                                    <div><span className="text-4xl font-black">{timeLeft.minutes}</span><span className="block text-[10px] text-slate-500 uppercase">Menit</span></div>
-                                </div>
-                            </div>
-                        </div>
-                    </section>
-
-                    {/* AI CENTER */}
-                    <section id="ai-center" className="py-24 bg-[#15050e] border-y border-white/5">
-                        <div className="container mx-auto px-6">
-                            <div className="flex flex-col md:flex-row items-end justify-between mb-12 gap-6">
-                                <div>
-                                    <h2 className="text-4xl font-black flex items-center gap-3 mb-4"><Brain className="text-yellow-500" size={40} /> TACTICAL AI</h2>
-                                    <p className="text-slate-400">Gunakan kecerdasan buatan untuk drilling soal dan konsultasi strategi 24/7.</p>
-                                </div>
-                                <div className="flex bg-[#2D0A1E] p-1 rounded-xl border border-white/10">
-                                    <button onClick={() => setAiMode('drill')} className={`px-6 py-2 rounded-lg font-bold text-xs transition-all ${aiMode === 'drill' ? 'bg-yellow-500 text-[#1a0b14]' : 'text-slate-500'}`}>SIMULASI CAT</button>
-                                    <button onClick={() => setAiMode('consult')} className={`px-6 py-2 rounded-lg font-bold text-xs transition-all ${aiMode === 'consult' ? 'bg-yellow-500 text-[#1a0b14]' : 'text-slate-500'}`}>KONSULTASI</button>
-                                </div>
-                            </div>
-
-                            <div className="bg-[#1a0b14] border border-white/10 rounded-[2rem] p-6 md:p-10 min-h-[500px] shadow-2xl relative overflow-hidden">
-                                <div className="absolute -top-24 -right-24 w-64 h-64 bg-yellow-500/5 rounded-full blur-3xl animate-pulse-slow"></div>
-                                
-                                {aiMode === 'drill' ? (
-                                    <div className="max-w-3xl mx-auto">
-                                        {!drillData ? (
-                                            <div className="text-center py-20">
-                                                <Target size={64} className="mx-auto text-yellow-500/20 mb-6" />
-                                                <h3 className="text-2xl font-bold mb-8">Siap Memulai Latihan, Ndan?</h3>
-                                                <div className="flex justify-center gap-4 mb-8">
-                                                    {['TWK', 'TIU', 'TKP'].map(cat => (
-                                                        <button key={cat} onClick={() => setDrillCategory(cat)} className={`px-8 py-3 rounded-xl border-2 font-black transition-all ${drillCategory === cat ? 'border-yellow-500 bg-yellow-500/10 text-yellow-500' : 'border-white/10 text-slate-500'}`}>{cat}</button>
-                                                    ))}
-                                                </div>
-                                                <button onClick={handleGenerateDrill} disabled={isLoading} className="bg-yellow-500 text-[#1a0b14] px-12 py-4 rounded-2xl font-black text-lg hover:bg-yellow-400 transition-all flex items-center gap-3 mx-auto shadow-xl shadow-yellow-500/20">
-                                                    {isLoading ? <Loader className="animate-spin" /> : <Zap size={20} />} GENERATE SOAL HOTS
-                                                </button>
-                                            </div>
-                                        ) : (
-                                            <div className="animate-in fade-in duration-500">
-                                                <div className="flex justify-between mb-8 border-b border-white/10 pb-4">
-                                                    <span className="bg-yellow-500 text-[#1a0b14] px-3 py-1 rounded-md text-[10px] font-black uppercase">Sektor: {drillCategory}</span>
-                                                    <button onClick={handleGenerateDrill} className="text-xs text-slate-500 hover:text-white flex items-center gap-1"><RefreshCw size={12}/> Reset</button>
-                                                </div>
-                                                <h4 className="text-xl md:text-2xl font-bold mb-8 leading-relaxed text-white">{drillData.question}</h4>
-                                                <div className="grid gap-3 mb-10">
-                                                    {drillData.options.map((opt, i) => (
-                                                        <button key={i} onClick={() => setUserAnswer(i)} disabled={userAnswer !== null} className={`text-left p-5 rounded-2xl border-2 transition-all font-medium ${userAnswer === null ? 'border-white/5 hover:border-yellow-500/50 hover:bg-white/5' : i === drillData.correctIndex ? 'border-green-500 bg-green-500/10 text-green-400' : userAnswer === i ? 'border-red-500 bg-red-500/10 text-red-400' : 'border-white/5 opacity-40'}`}>
-                                                            <span className="mr-3 opacity-50">{String.fromCharCode(65+i)}.</span> {opt}
-                                                        </button>
-                                                    ))}
-                                                </div>
-                                                {userAnswer !== null && (
-                                                    <div className="bg-[#2D0A1E] p-6 rounded-2xl border-l-4 border-yellow-500 animate-in slide-in-from-left-4">
-                                                        <h5 className="font-black text-yellow-500 mb-2 flex items-center gap-2"><Brain size={16}/> ANALISIS KOMANDAN</h5>
-                                                        <p className="text-slate-300 text-sm leading-relaxed">{drillData.explanation}</p>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        )}
-                                    </div>
-                                ) : (
-                                    <div className="flex flex-col h-[500px]">
-                                        <div className="flex-1 overflow-y-auto space-y-4 pr-2 mb-6">
-                                            {chatHistory.map((msg, i) => (
-                                                <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                                                    <div className={`max-w-[85%] p-4 rounded-2xl ${msg.role === 'user' ? 'bg-yellow-500 text-[#1a0b14] font-bold' : 'bg-[#2D0A1E] border border-white/10 text-slate-200'}`}>
-                                                        {msg.role === 'model' && <p className="text-[10px] text-yellow-500 font-black mb-1">COMMANDER AI</p>}
-                                                        <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.text}</p>
-                                                    </div>
-                                                </div>
-                                            ))}
-                                            {isLoading && <div className="text-xs text-slate-500 animate-pulse">Komandan sedang mengetik strategi...</div>}
-                                            <div ref={chatEndRef} />
-                                        </div>
-                                        <div className="relative">
-                                            <input value={chatInput} onChange={e => setChatInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleChatSend()} placeholder="Tanyakan strategi lulus seleksi..." className="w-full bg-black/40 border border-white/10 rounded-2xl py-5 px-6 pr-16 focus:outline-none focus:border-yellow-500 transition-all text-sm" />
-                                            <button onClick={handleChatSend} className="absolute right-3 top-3 p-3 bg-yellow-500 text-[#1a0b14] rounded-xl hover:scale-105 transition-all"><Send size={20} /></button>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    </section>
-
-                    {/* Program & Keunggulan */}
-                    <section id="program" className="py-24 px-6 bg-[#1a0b14]">
-                        <div className="container mx-auto">
-                            <h2 className="text-3xl font-black text-center mb-16 uppercase tracking-widest">4 Pilar Persiapan Elite</h2>
-                            <div className="grid md:grid-cols-4 gap-6">
-                                {[
-                                    { t: 'Akademik', i: Target, d: 'Drilling soal TWK, TIU, TKP standar CAT terbaru.' },
-                                    { t: 'Psikologi', i: Brain, d: 'Pelatihan mental dan tes kecermatan mendalam.' },
-                                    { t: 'Jasmani', i: Zap, d: 'Pembinaan fisik terukur sesuai item seleksi.' },
-                                    { t: 'Kesehatan', i: Shield, d: 'Edukasi dan skrining kesehatan awal siswa.' }
-                                ].map((p, i) => (
-                                    <div key={i} className="bg-[#2D0A1E] p-8 rounded-3xl border border-white/5 hover:border-yellow-500 transition-all group text-center">
-                                        <div className="w-16 h-16 bg-yellow-500/10 rounded-full flex items-center justify-center mx-auto mb-6 text-yellow-500 group-hover:bg-yellow-500 group-hover:text-[#1a0b14] transition-all">
-                                            <p.i size={32} />
-                                        </div>
-                                        <h3 className="text-xl font-black mb-3">{p.t}</h3>
-                                        <p className="text-xs text-slate-400 leading-relaxed">{p.d}</p>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    </section>
-
-                    {/* Footer */}
-                    <footer id="lokasi" className="py-20 border-t border-white/5 bg-black/20 text-center">
-                        <div className="container mx-auto px-6">
-                            <Shield className="mx-auto text-yellow-500 mb-6" size={48} />
-                            <h2 className="text-2xl font-black mb-4">IMPERIUM SMART CLASS</h2>
-                            <p className="text-slate-500 text-sm mb-8 max-w-lg mx-auto">Ruko Trade Center Blok J No 11, Sagulung, Batam. <br/> Siap mengantar Komandan menuju seragam impian.</p>
-                            <div className="flex justify-center gap-6 mb-12">
-                                <a href="https://wa.me/6285185443185" className="bg-yellow-500 text-[#1a0b14] p-4 rounded-full hover:scale-110 transition-all"><Phone size={24}/></a>
-                                <a href="https://instagram.com/imperium.smartclass" className="bg-[#2D0A1E] p-4 rounded-full hover:scale-110 transition-all text-yellow-500 border border-yellow-500/20"><Instagram size={24}/></a>
-                            </div>
-                            <p className="text-[10px] text-slate-700 font-bold uppercase tracking-widest">&copy; 2026 Imperium Smart Class. Menuju Garis Finish.</p>
-                        </div>
-                    </footer>
+    <nav class="sticky top-0 z-50 glass py-4 px-6 border-b border-white/5">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 gold-gradient rounded-lg flex items-center justify-center shadow-lg">
+                    <i data-lucide="shield" class="text-[#1a0b14]"></i>
                 </div>
-            );
+                <div>
+                    <h1 class="text-xl font-extrabold leading-none text-white tracking-tight">IMPERIUM</h1>
+                    <p class="text-[10px] text-yellow-500 font-bold tracking-[0.2em]">SMART CLASS</p>
+                </div>
+            </div>
+            <a href="https://wa.me/6285185443185" class="hidden md:block gold-gradient text-[#1a0b14] px-6 py-2 rounded-full font-bold text-sm hover:scale-105 transition-transform">DAFTAR BATCH 1</a>
+        </div>
+    </nav>
+
+    <section class="py-20 px-6 text-center">
+        <div class="container mx-auto">
+            <div class="inline-flex items-center gap-2 px-4 py-1 bg-yellow-500/10 border border-yellow-500/30 rounded-full mb-6">
+                <span class="w-2 h-2 bg-yellow-500 rounded-full animate-ping"></span>
+                <span class="text-yellow-500 text-[10px] font-bold uppercase tracking-widest">Batam Strategic Training Center</span>
+            </div>
+            <h1 class="text-4xl md:text-6xl font-black text-white mb-6 leading-tight">MENUJU GARIS <span class="text-yellow-500 italic">FINISH</span><br>DENGAN KEMENANGAN.</h1>
+            <p class="text-slate-400 max-w-2xl mx-auto mb-10 text-lg">Spesialis persiapan TNI, POLRI, & Kedinasan. Dilengkapi dengan **Imperium Tactical AI** untuk simulasi CAT 24 jam.</p>
+            
+            <div class="max-w-md mx-auto glass p-6 rounded-3xl mb-12">
+                <p class="text-xs font-bold text-yellow-500 uppercase mb-4">Pendaftaran Batch 1 Elite Squad</p>
+                <div class="grid grid-cols-3 gap-4">
+                    <div><span id="days" class="text-3xl font-black text-white">00</span><span class="block text-[10px] uppercase">Hari</span></div>
+                    <div><span id="hours" class="text-3xl font-black text-white">00</span><span class="block text-[10px] uppercase">Jam</span></div>
+                    <div><span id="minutes" class="text-3xl font-black text-white">00</span><span class="block text-[10px] uppercase">Menit</span></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-12 px-6">
+        <div class="container mx-auto glass p-8 rounded-[2rem] border-l-4 border-yellow-500">
+            <div class="flex flex-col md:flex-row items-center gap-6">
+                <div class="bg-yellow-500/20 p-4 rounded-2xl">
+                    <i data-lucide="map-pin" class="text-yellow-500 w-10 h-10"></i>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold text-white mb-2 text-center md:text-left">Official Admission & Payment Point</h3>
+                    <p class="text-slate-400 text-sm text-center md:text-left">Pendaftaran dan pembayaran offline dilakukan di **Yomu Point (Konter)**: Ruko Trade Center Blok J No. 11, Sagulung, Batam.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="ai-center" class="py-20 bg-[#15050e] px-6">
+        <div class="container mx-auto text-center mb-10">
+            <h2 class="text-3xl font-black text-white mb-4 uppercase tracking-widest flex justify-center items-center gap-3">
+                <i data-lucide="brain" class="text-yellow-500"></i> Tactical AI
+            </h2>
+            <p class="text-slate-500 text-sm">Pilih mode latihan untuk menguji kesiapan mental dan fisikmu.</p>
+        </div>
+
+        <div class="container mx-auto max-w-3xl glass p-8 rounded-[2rem] min-h-[400px]">
+            <div id="ai-content" class="space-y-6">
+                <div class="text-center py-10">
+                    <i data-lucide="target" class="w-16 h-16 text-yellow-500/20 mx-auto mb-6"></i>
+                    <h3 class="text-xl font-bold mb-8">Siap Memulai Latihan, Ndan?</h3>
+                    <button onclick="startDrill()" class="gold-gradient text-[#1a0b14] px-10 py-4 rounded-2xl font-black text-lg shadow-xl shadow-yellow-500/20 hover:scale-105 transition-transform">
+                        MULAI DRILLING SOAL
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="py-16 text-center border-t border-white/5">
+        <i data-lucide="shield" class="mx-auto text-yellow-500 mb-4 w-12 h-12"></i>
+        <h2 class="text-xl font-bold text-white mb-2 tracking-widest">IMPERIUM SMART CLASS</h2>
+        <p class="text-slate-600 text-xs mb-8 uppercase tracking-[0.3em]">Batam • Sagulung • Batu Aji</p>
+        <div class="flex justify-center gap-6 mb-10">
+            <a href="https://wa.me/6285185443185" class="p-3 glass rounded-full hover:text-yellow-500 transition-colors"><i data-lucide="phone"></i></a>
+            <a href="https://instagram.com/imperium.smartclass" class="p-3 glass rounded-full hover:text-yellow-500 transition-colors"><i data-lucide="instagram"></i></a>
+        </div>
+        <p class="text-[10px] text-slate-800 font-bold">&copy; 2026 IMPERIUM SMART CLASS. SEMUA HAK DILINDUNGI.</p>
+    </footer>
+
+    <script>
+        // Initialize Lucide Icons
+        lucide.createIcons();
+
+        // Countdown Logic
+        const targetDate = new Date('2026-03-01T00:00:00');
+        function updateTimer() {
+            const now = new Date();
+            const diff = targetDate - now;
+            if (diff > 0) {
+                document.getElementById('days').innerText = Math.floor(diff / (1000 * 60 * 60 * 24)).toString().padStart(2, '0');
+                document.getElementById('hours').innerText = Math.floor((diff / (1000 * 60 * 60)) % 24).toString().padStart(2, '0');
+                document.getElementById('minutes').innerText = Math.floor((diff / 1000 / 60) % 60).toString().padStart(2, '0');
+            }
         }
+        setInterval(updateTimer, 1000);
+        updateTimer();
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
-
-        // Initialize Lucide Icons after render
-        setTimeout(() => lucide.createIcons(), 1000);
+        // Simple AI Simulation (To ensure it works without API Key first)
+        function startDrill() {
+            const container = document.getElementById('ai-content');
+            container.innerHTML = `
+                <div class="animate-pulse text-center">
+                    <p class="text-yellow-500 font-bold mb-4">MENGHUBUNGI MARKAS KOMANDO...</p>
+                    <div class="h-4 w-48 bg-white/10 mx-auto rounded"></div>
+                </div>
+            `;
+            
+            setTimeout(() => {
+                container.innerHTML = `
+                    <div class="space-y-6">
+                        <div class="flex justify-between items-center text-xs">
+                            <span class="bg-yellow-500 text-black px-2 py-1 rounded font-black">TWK - HOTS</span>
+                            <span class="text-slate-500 italic">Simulasi Offline</span>
+                        </div>
+                        <h4 class="text-xl font-bold leading-relaxed text-white">Berikut yang merupakan perwujudan nilai Pancasila dalam bidang pertahanan dan keamanan adalah...</h4>
+                        <div class="grid gap-3">
+                            <button onclick="alert('Bukan ini, Ndan. Pelajari lagi!')" class="text-left p-4 rounded-xl border border-white/10 hover:border-yellow-500 transition-all text-sm">A. Mematuhi norma agama</button>
+                            <button onclick="alert('Tepat sekali, Taruna! Siap Maju!')" class="text-left p-4 rounded-xl border border-white/10 hover:border-yellow-500 transition-all text-sm">B. Berpartisipasi dalam Siskamling</button>
+                            <button onclick="alert('Kurang tepat!')" class="text-left p-4 rounded-xl border border-white/10 hover:border-yellow-500 transition-all text-sm">C. Membayar pajak tepat waktu</button>
+                        </div>
+                        <button onclick="location.reload()" class="w-full text-xs text-slate-500 hover:text-white underline mt-4">Reset Simulasi</button>
+                    </div>
+                `;
+            }, 1500);
+        }
     </script>
 </body>
 </html>
