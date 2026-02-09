@@ -17,6 +17,7 @@
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #1a0b14; }
         ::-webkit-scrollbar-thumb { background: #fbbf24; border-radius: 10px; }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
     </style>
 </head>
 <body class="selection:bg-yellow-500 selection:text-black">
@@ -51,16 +52,13 @@
 
     <section class="relative pt-16 pb-24 px-6 text-center overflow-hidden">
         <div class="absolute top-20 left-1/2 -translate-x-1/2 w-80 h-80 bg-yellow-500/10 rounded-full blur-[100px] -z-10"></div>
-        
         <div class="inline-flex items-center gap-2 border border-yellow-500/30 px-4 py-1.5 rounded-full text-[10px] font-bold text-yellow-500 mb-8 uppercase tracking-[0.2em] bg-yellow-500/5">
             <span class="w-2 h-2 bg-yellow-500 rounded-full animate-ping"></span>
             Pusat Pelatihan Strategis TNI/POLRI
         </div>
-        
         <h1 class="text-4xl md:text-6xl font-black mb-6 italic leading-tight uppercase">
             Menuju Garis <span class="gold-text">Finish</span><br>Dengan Kemenangan
         </h1>
-        
         <p class="text-slate-400 text-sm md:text-lg max-w-2xl mx-auto mb-12 leading-relaxed border-l-2 border-yellow-500/50 px-4">
             Spesialis persiapan masuk TNI, POLRI, & Kedinasan. Unggul dalam <span class="text-white font-bold">Karakter, Akademik, dan Fisik</span> melalui sistem pelatihan taktis.
         </p>
@@ -76,7 +74,7 @@
                 <div><p id="minutes" class="text-3xl font-black">00</p><p class="text-[8px] text-slate-500 uppercase">Menit</p></div>
             </div>
             <div class="mt-6 flex items-center justify-center gap-3">
-                <span class="line-through text-slate-600 text-xs italic">Rp 5.000.000</span>
+                <span class="line-through text-slate-600 text-xs italic">Rp 6.000.000</span>
                 <span class="bg-green-500/20 text-green-400 text-xs font-bold px-2 py-1 rounded">Diskon 50%</span>
             </div>
         </div>
@@ -88,6 +86,67 @@
             <button onclick="document.getElementById('program').scrollIntoView()" class="w-full sm:w-auto border border-white/10 py-4 px-10 rounded-2xl font-bold text-sm hover:bg-white/5">
                 LIHAT KURIKULUM
             </button>
+        </div>
+    </section>
+
+    <section id="ai-center" class="py-20 px-6">
+        <div class="max-w-4xl mx-auto">
+            <div class="flex items-center gap-4 mb-10">
+                <div class="w-12 h-12 rounded-full bg-yellow-500 flex items-center justify-center text-black shadow-lg shadow-yellow-500/40">
+                    <i class="fas fa-robot fa-lg"></i>
+                </div>
+                <div>
+                    <h2 class="text-2xl font-black uppercase tracking-tighter italic">Imperium Tactical AI ✨</h2>
+                    <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Sistem Simulasi & Konsultasi Real-Time</p>
+                </div>
+            </div>
+
+            <div class="glass rounded-[2.5rem] overflow-hidden border-white/10 shadow-2xl min-h-[500px] flex flex-col">
+                <div class="flex border-b border-white/5 bg-white/5">
+                    <button id="tab-drill" onclick="switchTab('drill')" class="flex-1 py-5 text-[10px] font-black uppercase tracking-widest bg-yellow-500 text-black transition-all">
+                        <i class="fas fa-crosshairs mr-2"></i> Simulasi Soal
+                    </button>
+                    <button id="tab-chat" onclick="switchTab('chat')" class="flex-1 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 transition-all">
+                        <i class="fas fa-comments mr-2"></i> Chat Mentor
+                    </button>
+                </div>
+                
+                <div id="drill-content" class="p-6 md:p-10 text-center flex-1 flex flex-col justify-center items-center">
+                    <div id="drill-initial">
+                        <div class="relative mb-8">
+                            <div class="absolute inset-0 bg-yellow-500 rounded-full blur-2xl opacity-20 animate-pulse"></div>
+                            <i class="fas fa-brain text-5xl text-yellow-500 relative"></i>
+                        </div>
+                        <h3 class="text-xl font-extrabold mb-4 uppercase italic">Sistem Siap Tempur</h3>
+                        <p class="text-xs text-slate-400 max-w-xs leading-relaxed mb-8">Tekan tombol di bawah untuk membangkitkan soal HOTS terbaru dari bank data Imperium AI.</p>
+                        <button onclick="generateQuestion()" id="btn-gen" class="border-2 border-yellow-500 text-yellow-500 px-10 py-3 rounded-xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-yellow-500 hover:text-black transition-all">
+                            Mulai Latihan Kilat
+                        </button>
+                    </div>
+
+                    <div id="drill-display" class="hidden w-full text-left">
+                        <div class="mb-6 p-4 bg-white/5 rounded-2xl border border-yellow-500/20">
+                            <p id="q-text" class="text-sm md:text-base font-bold italic leading-relaxed"></p>
+                        </div>
+                        <div id="q-options" class="grid gap-3 mb-6"></div>
+                        <div id="q-expl" class="hidden p-4 bg-crimson/50 border border-yellow-500/30 rounded-xl text-[11px] text-slate-300 italic"></div>
+                        <button onclick="generateQuestion()" class="text-yellow-500 text-[10px] font-bold uppercase tracking-widest"><i class="fas fa-sync mr-2"></i> Ganti Soal</button>
+                    </div>
+                </div>
+
+                <div id="chat-content" class="hidden p-6 flex-1 flex flex-col overflow-hidden h-[400px]">
+                    <div id="chat-box" class="flex-1 overflow-y-auto space-y-4 mb-4 pr-2 scrollbar-hide text-[11px]">
+                        <div class="bg-white/5 p-3 rounded-2xl rounded-bl-none max-w-[80%] border border-white/10">
+                            <p class="text-yellow-500 font-black mb-1">KOMANDAN AI:</p>
+                            <p>Siap, Calon Taruna! Ada kendala apa dalam persiapanmu? Tanyakan strategi atau materi padaku.</p>
+                        </div>
+                    </div>
+                    <div class="relative">
+                        <input type="text" id="chat-input" placeholder="Tanyakan sesuatu..." class="w-full bg-black/40 border border-white/10 rounded-xl py-3 px-4 text-xs focus:outline-none focus:border-yellow-500">
+                        <button onclick="sendMessage()" class="absolute right-2 top-2 bg-yellow-500 text-black p-2 rounded-lg"><i class="fas fa-paper-plane text-xs"></i></button>
+                    </div>
+                </div>
+            </div>
         </div>
     </section>
 
@@ -120,97 +179,6 @@
         </div>
     </section>
 
-    <section id="ai-center" class="py-20 px-6">
-        <div class="max-w-4xl mx-auto">
-            <div class="flex items-center gap-4 mb-10">
-                <div class="w-12 h-12 rounded-full bg-yellow-500 flex items-center justify-center text-black shadow-lg shadow-yellow-500/40">
-                    <i class="fas fa-robot fa-lg"></i>
-                </div>
-                <div>
-                    <h2 class="text-2xl font-black uppercase tracking-tighter italic">Imperium Tactical AI ✨</h2>
-                    <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Sistem Simulasi & Konsultasi Real-Time</p>
-                </div>
-            </div>
-
-            <div class="glass rounded-[2.5rem] overflow-hidden border-white/10 shadow-2xl">
-                <div class="flex border-b border-white/5 bg-white/5">
-                    <button class="flex-1 py-5 text-[10px] font-black uppercase tracking-widest bg-yellow-500 text-black">
-                        <i class="fas fa-crosshairs mr-2"></i> Simulasi Soal
-                    </button>
-                    <button class="flex-1 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400">
-                        <i class="fas fa-comments mr-2"></i> Chat Mentor
-                    </button>
-                </div>
-                
-                <div class="p-10 text-center min-h-[350px] flex flex-col justify-center items-center">
-                    <div class="relative mb-8">
-                        <div class="absolute inset-0 bg-yellow-500 rounded-full blur-2xl opacity-20 animate-pulse"></div>
-                        <i class="fas fa-brain text-5xl text-yellow-500 relative"></i>
-                    </div>
-                    <h3 class="text-xl font-extrabold mb-4 uppercase italic">Sistem Siap Tempur</h3>
-                    <p class="text-xs text-slate-400 max-w-xs leading-relaxed mb-8">
-                        Tekan tombol di bawah untuk membangkitkan soal HOTS terbaru dari bank data Imperium AI.
-                    </p>
-                    <button class="border-2 border-yellow-500 text-yellow-500 px-10 py-3 rounded-xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-yellow-500 hover:text-black transition-all">
-                        Mulai Latihan Kilat
-                    </button>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section id="keunggulan" class="py-20 px-6 bg-black/40">
-        <div class="max-w-6xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
-            <div>
-                <h3 class="text-yellow-500 font-bold uppercase tracking-widest text-[10px] mb-4">Why Us?</h3>
-                <h2 class="text-4xl font-black uppercase leading-[1.1] mb-8 italic">Sistem Pelatihan Taktis<br>Berstandar Institusi</h2>
-                <div class="space-y-5">
-                    <div class="flex items-start gap-4">
-                        <div class="mt-1 bg-green-500/20 text-green-500 p-1 rounded-full"><i class="fas fa-check text-[10px]"></i></div>
-                        <p class="text-sm font-bold text-slate-200 uppercase tracking-tight">Kelas Offline & Online Hybrid (Fleksibel)</p>
-                    </div>
-                    <div class="flex items-start gap-4">
-                        <div class="mt-1 bg-green-500/20 text-green-500 p-1 rounded-full"><i class="fas fa-check text-[10px]"></i></div>
-                        <p class="text-sm font-bold text-slate-200 uppercase tracking-tight">Tutor Berpengalaman & Praktisi Langsung</p>
-                    </div>
-                    <div class="flex items-start gap-4">
-                        <div class="mt-1 bg-green-500/20 text-green-500 p-1 rounded-full"><i class="fas fa-check text-[10px]"></i></div>
-                        <p class="text-sm font-bold text-slate-200 uppercase tracking-tight">Try-Out & Evaluasi Mingguan (CAT System)</p>
-                    </div>
-                    <div class="flex items-start gap-4">
-                        <div class="mt-1 bg-green-500/20 text-green-500 p-1 rounded-full"><i class="fas fa-check text-[10px]"></i></div>
-                        <p class="text-sm font-bold text-slate-200 uppercase tracking-tight">Free E-Book Premium & Grup Diskusi</p>
-                    </div>
-                </div>
-            </div>
-            <div class="glass p-10 rounded-[3rem] border-white/5 relative shadow-2xl overflow-hidden">
-                <div class="absolute -top-10 -right-10 w-40 h-40 bg-yellow-500/5 rounded-full blur-3xl"></div>
-                <h3 class="text-xl font-black uppercase italic mb-8 border-b border-white/10 pb-4 tracking-tighter">Paket Batch 1 Elite Squad</h3>
-                <ul class="space-y-4 mb-10">
-                    <li class="flex justify-between items-center text-xs font-bold border-b border-white/5 pb-3">
-                        <span>1. KELAS OFFLINE INTENSIF</span>
-                        <i class="fas fa-star text-yellow-500"></i>
-                    </li>
-                    <li class="flex justify-between items-center text-xs font-bold border-b border-white/5 pb-3">
-                        <span>2. KELAS LIVE ZOOM ONLINE</span>
-                        <span class="bg-red-500 px-2 py-0.5 rounded text-[8px]">LIVE</span>
-                    </li>
-                    <li class="flex justify-between items-center text-xs font-bold border-b border-white/5 pb-3">
-                        <span>3. DRILLING SOAL SETIAP HARI</span>
-                        <i class="fas fa-fire text-orange-500"></i>
-                    </li>
-                    <li class="flex justify-between items-center text-xs font-bold border-b border-white/5 pb-3 text-slate-400">
-                        <span>4. KONSULTASI MENTOR 24/7</span>
-                        <i class="fas fa-headset"></i>
-                    </li>
-                </ul>
-                <a href="https://wa.me/6285185443185" class="block w-full text-center gold-gradient py-4 rounded-2xl text-black font-black text-xs uppercase tracking-widest shadow-lg shadow-yellow-500/20">
-                    Daftar Sekarang Juga!
-                </a>
-            </div>
-        </div>
-    </section>
-
     <footer id="lokasi" class="pt-20 pb-10 px-6 border-t border-white/10 bg-[#0f050b]">
         <div class="max-w-6xl mx-auto grid md:grid-cols-3 gap-12 mb-20">
             <div>
@@ -218,15 +186,12 @@
                     <div class="text-yellow-500"><i class="fas fa-shield-halved fa-2xl"></i></div>
                     <span class="text-xl font-black tracking-tighter">IMPERIUM</span>
                 </div>
-                <p class="text-xs text-slate-500 leading-relaxed mb-6">
-                    Bimbel spesialis kedinasan dengan kurikulum terstruktur. Kami tidak hanya meluluskan ujian, tapi membentuk karakter pemenang.
-                </p>
+                <p class="text-xs text-slate-500 leading-relaxed mb-6">Bimbel spesialis kedinasan dengan kurikulum terstruktur. Kami tidak hanya meluluskan ujian, tapi membentuk karakter pemenang.</p>
                 <div class="flex gap-4">
                     <a href="https://instagram.com/imperium.smartclass" class="w-10 h-10 rounded-full glass flex items-center justify-center hover:bg-yellow-500 hover:text-black transition"><i class="fab fa-instagram"></i></a>
                     <a href="https://wa.me/6285185443185" class="w-10 h-10 rounded-full glass flex items-center justify-center hover:bg-yellow-500 hover:text-black transition"><i class="fab fa-whatsapp"></i></a>
                 </div>
             </div>
-            
             <div>
                 <h4 class="text-[10px] font-black uppercase tracking-[0.2em] mb-8 text-yellow-500">Markas Komando</h4>
                 <div class="space-y-4">
@@ -234,49 +199,115 @@
                         <i class="fas fa-map-marker-alt text-yellow-500 mt-1"></i>
                         <p class="text-[11px] text-slate-400 leading-relaxed font-bold">Ruko Trade Center Blok J No 11, Sagulung, Batam.</p>
                     </div>
-                    <div class="flex items-center gap-3">
-                        <i class="fas fa-clock text-yellow-500"></i>
-                        <p class="text-[11px] text-slate-400 font-bold uppercase">Senin - Sabtu: 08.00 - 20.00</p>
-                    </div>
                 </div>
             </div>
-
             <div>
                 <h4 class="text-[10px] font-black uppercase tracking-[0.2em] mb-8 text-yellow-500">Hubungi Admin</h4>
-                <div class="space-y-3">
-                    <a href="https://wa.me/6285185443185" class="block glass p-4 rounded-xl hover:border-yellow-500 group transition">
-                        <p class="text-[8px] text-slate-500 font-bold uppercase mb-1 group-hover:text-yellow-500">Admin Utama</p>
-                        <p class="text-sm font-black">0851 8544 3185</p>
-                    </a>
-                    <a href="https://wa.me/6285960184775" class="block glass p-4 rounded-xl hover:border-yellow-500 group transition">
-                        <p class="text-[8px] text-slate-500 font-bold uppercase mb-1 group-hover:text-yellow-500">Admin 2</p>
-                        <p class="text-sm font-black">0859 6018 4775</p>
-                    </a>
-                </div>
+                <a href="https://wa.me/6285185443185" class="block glass p-4 rounded-xl hover:border-yellow-500 group transition">
+                    <p class="text-[8px] text-slate-500 font-bold uppercase mb-1 group-hover:text-yellow-500">Admin Utama</p>
+                    <p class="text-sm font-black">0851 8544 3185</p>
+                </a>
             </div>
         </div>
-        <div class="text-center text-[8px] text-slate-700 uppercase tracking-widest font-black">
-            &copy; 2026 Imperium Smart Class. Menuju Garis Finish.
-        </div>
+        <div class="text-center text-[8px] text-slate-700 uppercase tracking-widest font-black">&copy; 2026 Imperium Smart Class. Menuju Garis Finish.</div>
     </footer>
 
     <script>
+        // --- CONFIG ---
+        const API_KEY = "MASUKKAN_API_KEY_GEMINI_DISINI";
+
+        // --- TABS ---
+        function switchTab(mode) {
+            const isDrill = mode === 'drill';
+            document.getElementById('drill-content').classList.toggle('hidden', !isDrill);
+            document.getElementById('chat-content').classList.toggle('hidden', isDrill);
+            
+            document.getElementById('tab-drill').className = isDrill ? "flex-1 py-5 text-[10px] font-black uppercase tracking-widest bg-yellow-500 text-black transition-all" : "flex-1 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 transition-all";
+            document.getElementById('tab-chat').className = !isDrill ? "flex-1 py-5 text-[10px] font-black uppercase tracking-widest bg-yellow-500 text-black transition-all" : "flex-1 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 transition-all";
+        }
+
+        // --- CORE AI ENGINE ---
+        async function askAI(prompt, isJson = false) {
+            if(API_KEY === "MASUKKAN_API_KEY_GEMINI_DISINI") { alert("Ndan, API Key belum diisi!"); return null; }
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        contents: [{parts: [{text: prompt}]}],
+                        generationConfig: isJson ? { responseMimeType: "application/json" } : {}
+                    })
+                });
+                const data = await response.json();
+                return data.candidates[0].content.parts[0].text;
+            } catch (e) { return null; }
+        }
+
+        // --- DRILL LOGIC ---
+        async function generateQuestion() {
+            document.getElementById('btn-gen').innerText = "MEMBANGKITKAN...";
+            const prompt = "Buat 1 soal HOTS seleksi POLRI/TNI (TWK/TIU). Output JSON: {question, options:[A,B,C,D,E], correctIndex, explanation}";
+            const res = await askAI(prompt, true);
+            if(res) {
+                const data = JSON.parse(res);
+                document.getElementById('drill-initial').classList.add('hidden');
+                const display = document.getElementById('drill-display');
+                display.classList.remove('hidden');
+                document.getElementById('q-text').innerText = data.question;
+                document.getElementById('q-expl').innerText = "Analisis: " + data.explanation;
+                document.getElementById('q-expl').classList.add('hidden');
+                
+                const optBox = document.getElementById('q-options');
+                optBox.innerHTML = '';
+                data.options.forEach((opt, i) => {
+                    const btn = document.createElement('button');
+                    btn.className = "w-full text-left p-3 rounded-xl border border-white/10 text-[11px] hover:bg-white/5 transition";
+                    btn.innerText = opt;
+                    btn.onclick = () => {
+                        const all = optBox.querySelectorAll('button');
+                        all.forEach(b => b.disabled = true);
+                        if(i === data.correctIndex) btn.classList.add('border-green-500', 'bg-green-500/20', 'text-green-400');
+                        else {
+                            btn.classList.add('border-red-500', 'bg-red-500/20', 'text-red-400');
+                            all[data.correctIndex].classList.add('border-green-500', 'text-green-400');
+                        }
+                        document.getElementById('q-expl').classList.remove('hidden');
+                    };
+                    optBox.appendChild(btn);
+                });
+            }
+            document.getElementById('btn-gen').innerText = "MULAI LATIHAN KILAT";
+        }
+
+        // --- CHAT LOGIC ---
+        async function sendMessage() {
+            const input = document.getElementById('chat-input');
+            const box = document.getElementById('chat-box');
+            if(!input.value.trim()) return;
+
+            const userMsg = input.value;
+            box.innerHTML += `<div class="bg-yellow-500/10 p-3 rounded-2xl rounded-br-none ml-auto max-w-[80%] border border-yellow-500/20 text-right"><p class="text-yellow-500 font-black mb-1 text-[8px]">SAYA:</p><p>${userMsg}</p></div>`;
+            input.value = '';
+            box.scrollTop = box.scrollHeight;
+
+            const res = await askAI(`Kamu adalah Mentor Imperium, panggil user 'Ndan' atau 'Calon Taruna'. Jawab singkat & taktis: ${userMsg}`);
+            if(res) {
+                box.innerHTML += `<div class="bg-white/5 p-3 rounded-2xl rounded-bl-none max-w-[80%] border border-white/10"><p class="text-yellow-500 font-black mb-1 text-[8px]">KOMANDAN AI:</p><p>${res}</p></div>`;
+            }
+            box.scrollTop = box.scrollHeight;
+        }
+
+        // --- COUNTDOWN ---
         function updateCountdown() {
             const target = new Date('March 1, 2026 00:00:00').getTime();
             const now = new Date().getTime();
             const diff = target - now;
-
-            const d = Math.floor(diff / (1000 * 60 * 60 * 24));
-            const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-
-            document.getElementById('days').innerText = d.toString().padStart(2, '0');
-            document.getElementById('hours').innerText = h.toString().padStart(2, '0');
-            document.getElementById('minutes').innerText = m.toString().padStart(2, '0');
+            document.getElementById('days').innerText = Math.floor(diff / (1000 * 60 * 60 * 24)).toString().padStart(2, '0');
+            document.getElementById('hours').innerText = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)).toString().padStart(2, '0');
+            document.getElementById('minutes').innerText = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)).toString().padStart(2, '0');
         }
-        setInterval(updateCountdown, 1000);
-        updateCountdown();
+        setInterval(updateCountdown, 1000); updateCountdown();
     </script>
-
 </body>
 </html>
