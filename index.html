@@ -1,349 +1,375 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IMPERIUM SMART CLASS | Menuju Garis Finish</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+import React, { useState, useEffect, useRef } from 'react';
+import { Shield, Users, Target, Zap, Phone, MapPin, CheckCircle, Clock, Star, ChevronRight, Menu, X, Instagram, Brain, MessageSquare, RefreshCw, Send, Loader } from 'lucide-react';
+
+export default function App() {
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0 });
+
+  // --- AI STATE ---
+  const [aiMode, setAiMode] = useState('drill'); // 'drill' or 'consult'
+  const [drillCategory, setDrillCategory] = useState('TWK');
+  const [drillData, setDrillData] = useState(null);
+  const [userAnswer, setUserAnswer] = useState(null);
+  const [chatHistory, setChatHistory] = useState([
+    { role: 'model', text: 'Siap! Saya Komandan AI Imperium. Ada yang bisa saya bantu untuk strategi persiapanmu?' }
+  ]);
+  const [chatInput, setChatInput] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const chatEndRef = useRef(null);
+
+  // --- AI LOGIC (KEY INJECTED) ---
+  const callGemini = async (prompt, isJson = false) => {
+    setIsLoading(true);
+    // API Key Komandan sudah terpasang di sini
+    const apiKey = "AIzaSyBQu9PW-1Lhwc50EloRrqFnhqBWrYxUEwE"; 
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+
+    const systemInstruction = isJson 
+      ? "Anda adalah instruktur elite untuk persiapan tes TNI/POLRI/Kedinasan. Buatkan 1 soal latihan High Order Thinking Skill (HOTS) yang menantang. Output MURNI JSON tanpa markdown."
+      : "Anda adalah Komandan Mentor di Imperium Smart Class. Jawab dengan tegas, ringkas, memotivasi, dan taktis. Panggil user dengan sebutan 'Calon Taruna' atau 'Siswa'. Fokus pada strategi lulus seleksi.";
+
+    const generationConfig = isJson 
+      ? { responseMimeType: "application/json" }
+      : {};
+
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          // System Instruction untuk Flash menggunakan format prompt prefix
+          systemInstruction: { parts: [{ text: systemInstruction }] },
+          generationConfig: generationConfig
+        })
+      });
+
+      const data = await response.json();
+      setIsLoading(false);
+      
+      if (data.error) {
+        console.error("Gemini Error:", data.error);
+        return null;
+      }
+      
+      const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+      return isJson ? JSON.parse(text) : text;
+
+    } catch (error) {
+      console.error("Fetch Error:", error);
+      setIsLoading(false);
+      return null;
+    }
+  };
+
+  const handleGenerateDrill = async () => {
+    setDrillData(null);
+    setUserAnswer(null);
+    const prompt = `Buatkan 1 soal pilihan ganda HOTS untuk kategori ${drillCategory} (Tes Seleksi Kompetensi Dasar). Pastikan opsi jawaban ada 5 (A-E). Berikan output JSON: { "question": "...", "options": ["A...", "B...", "C...", "D...", "E..."], "correctIndex": 0, "explanation": "..." }`;
+    const data = await callGemini(prompt, true);
+    if (data) setDrillData(data);
+  };
+
+  const handleChatSend = async () => {
+    if (!chatInput.trim()) return;
+    const userMsg = chatInput;
+    setChatHistory(prev => [...prev, { role: 'user', text: userMsg }]);
+    setChatInput('');
     
-    <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #1a0b14; color: white; scroll-behavior: smooth; }
-        .glass { background: rgba(45, 10, 30, 0.6); backdrop-filter: blur(12px); border: 1px solid rgba(251, 191, 36, 0.2); }
-        .gold-gradient { background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%); }
-        .gold-text { background: linear-gradient(to right, #fbbf24, #f59e0b); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .card-pilar:hover { border-color: #fbbf24; transform: translateY(-5px); transition: all 0.3s ease; }
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #1a0b14; }
-        ::-webkit-scrollbar-thumb { background: #fbbf24; border-radius: 10px; }
-        .scrollbar-hide::-webkit-scrollbar { display: none; }
-    </style>
-</head>
-<body class="selection:bg-yellow-500 selection:text-black">
+    const response = await callGemini(userMsg, false);
+    if (response) {
+      setChatHistory(prev => [...prev, { role: 'model', text: response }]);
+    }
+  };
 
-    <div class="bg-[#2D0A1E] text-[10px] md:text-xs py-2 px-6 border-b border-white/10 flex flex-col md:flex-row justify-between items-center gap-2">
-        <div class="flex gap-4">
-            <span><i class="fas fa-phone text-yellow-500 mr-1"></i> 0851 8544 3185</span>
-            <span class="text-white/20">|</span>
-            <span><i class="fas fa-phone text-yellow-500 mr-1"></i> 0859 6018 4775</span>
-            <span class="hidden md:block text-white/20">|</span>
-            <span class="hidden md:block"><i class="fas fa-location-dot text-yellow-500 mr-1"></i> Ruko Trade Center Blok J no 11, Batam</span>
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [chatHistory]);
+
+  // --- TIMER & SCROLL EFFECTS ---
+  useEffect(() => {
+    const targetDate = new Date('2026-03-01T00:00:00');
+    const interval = setInterval(() => {
+      const now = new Date();
+      const difference = targetDate - now;
+      if (difference > 0) {
+        setTimeLeft({
+          days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+          hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
+          minutes: Math.floor((difference / 1000 / 60) % 60),
+        });
+      }
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const handleScroll = () => setIsScrolled(window.scrollY > 50);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const scrollToSection = (id) => {
+    const element = document.getElementById(id);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+      setIsMobileMenuOpen(false);
+    }
+  };
+
+  return (
+    <div className="font-sans text-slate-800 bg-[#1a0b14] min-h-screen selection:bg-yellow-500 selection:text-slate-900">
+      
+      {/* Top Bar */}
+      <div className="bg-[#2D0A1E] text-white py-2 text-xs md:text-sm border-b border-white/10">
+        <div className="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-2">
+          <div className="flex items-center gap-4">
+            <span className="flex items-center gap-1"><Phone size={14} className="text-yellow-500" /> 0851 8544 3185</span>
+            <span className="hidden md:inline text-white/20">|</span>
+            <span className="flex items-center gap-1"><Phone size={14} className="text-yellow-500" /> 0859 6018 4775</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <MapPin size={14} className="text-yellow-500" />
+            <span>Ruko Trade Center Blok J no 11, Sagulung</span>
+          </div>
         </div>
-        <div class="font-bold uppercase tracking-widest text-yellow-500">Pendaftaran Batch 1 Dibuka!</div>
-    </div>
+      </div>
 
-    <nav class="sticky top-0 z-50 glass border-b border-white/5 py-4 px-6 flex justify-between items-center">
-        <div class="flex items-center gap-3">
-            <div class="gold-gradient p-2 rounded-lg text-[#1a0b14] shadow-lg shadow-yellow-500/20">
-                <i class="fas fa-shield-halved fa-lg"></i>
+      {/* Navigation */}
+      <nav className={`sticky top-0 z-50 transition-all duration-300 border-b border-white/5 ${isScrolled ? 'bg-[#1a0b14]/95 backdrop-blur-md py-3 shadow-xl' : 'bg-[#1a0b14] py-5'}`}>
+        <div className="container mx-auto px-6 flex justify-between items-center">
+          <div className="flex items-center gap-3 cursor-pointer" onClick={() => window.scrollTo({top: 0, behavior: 'smooth'})}>
+            <div className="w-10 h-10 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-lg flex items-center justify-center shadow-lg shadow-yellow-500/20">
+              <Shield className="text-[#1a0b14] fill-current" size={24} />
             </div>
             <div>
-                <h1 class="font-black text-xl tracking-tighter leading-none">IMPERIUM</h1>
-                <p class="text-[9px] text-yellow-500 font-bold uppercase tracking-[0.2em]">Smart Class</p>
+              <h1 className="text-xl font-bold text-white leading-none tracking-wide uppercase">Imperium</h1>
+              <p className="text-[10px] text-yellow-500 tracking-[0.2em] font-bold">SMART CLASS</p>
             </div>
-        </div>
-        <div class="hidden md:flex gap-8 text-[10px] font-bold uppercase tracking-widest">
-            <a href="#ai-center" class="hover:text-yellow-500 transition">AI Center</a>
-            <a href="#program" class="hover:text-yellow-500 transition">Program</a>
-            <a href="#keunggulan" class="hover:text-yellow-500 transition">Keunggulan</a>
-            <a href="#lokasi" class="hover:text-yellow-500 transition">Lokasi</a>
-        </div>
-        <a href="https://wa.me/6285185443185" class="gold-gradient text-black px-6 py-2 rounded-full font-extrabold text-xs shadow-lg hover:scale-105 transition uppercase">Hubungi Admin</a>
-    </nav>
-
-    <section class="relative pt-16 pb-24 px-6 text-center overflow-hidden">
-        <div class="absolute top-20 left-1/2 -translate-x-1/2 w-80 h-80 bg-yellow-500/10 rounded-full blur-[100px] -z-10"></div>
-        <div class="inline-flex items-center gap-2 border border-yellow-500/30 px-4 py-1.5 rounded-full text-[10px] font-bold text-yellow-500 mb-8 uppercase tracking-[0.2em] bg-yellow-500/5">
-            <span class="w-2 h-2 bg-yellow-500 rounded-full animate-ping"></span>
-            Pusat Pelatihan Strategis TNI/POLRI
-        </div>
-        <h1 class="text-4xl md:text-6xl font-black mb-6 italic leading-tight uppercase">
-            Menuju Garis <span class="gold-text">Finish</span><br>Dengan Kemenangan
-        </h1>
-        <p class="text-slate-400 text-sm md:text-lg max-w-2xl mx-auto mb-12 leading-relaxed border-l-2 border-yellow-500/50 px-4">
-            Spesialis persiapan masuk TNI, POLRI, & Kedinasan. Unggul dalam <span class="text-white font-bold">Karakter, Akademik, dan Fisik</span> melalui sistem pelatihan taktis.
-        </p>
-
-        <div class="glass p-8 rounded-[2rem] max-w-sm mx-auto mb-10 border-yellow-500 relative overflow-hidden">
-            <div class="absolute top-0 right-0 bg-red-600 text-[9px] font-bold px-4 py-1 rounded-bl-xl uppercase tracking-widest">Urgent</div>
-            <p class="text-[10px] font-bold text-slate-400 mb-4 uppercase tracking-[0.2em]">Batch 1 Promo Berakhir:</p>
-            <div class="flex justify-around items-center">
-                <div><p id="days" class="text-3xl font-black">00</p><p class="text-[8px] text-slate-500 uppercase">Hari</p></div>
-                <div class="text-xl text-yellow-500">:</div>
-                <div><p id="hours" class="text-3xl font-black">00</p><p class="text-[8px] text-slate-500 uppercase">Jam</p></div>
-                <div class="text-xl text-yellow-500">:</div>
-                <div><p id="minutes" class="text-3xl font-black">00</p><p class="text-[8px] text-slate-500 uppercase">Menit</p></div>
-            </div>
-            <div class="mt-6 flex items-center justify-center gap-3">
-                <span class="line-through text-slate-600 text-xs italic">Rp 6.000.000</span>
-                <span class="bg-green-500/20 text-green-400 text-xs font-bold px-2 py-1 rounded">Diskon 50%</span>
-            </div>
-        </div>
-
-        <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <a href="https://wa.me/6285185443185" class="w-full sm:w-auto gold-gradient text-black py-4 px-10 rounded-2xl font-black text-sm shadow-xl shadow-yellow-500/20 flex items-center justify-center gap-3">
-                AMBIL KUOTA ELITE <i class="fas fa-chevron-right"></i>
+          </div>
+          <div className="hidden md:flex items-center gap-8">
+            {['AI Center', 'Program', 'Keunggulan', 'Lokasi'].map((item) => (
+              <button key={item} onClick={() => scrollToSection(item.toLowerCase().replace(' ', '-'))} className="text-sm font-medium text-slate-300 hover:text-yellow-400 transition-colors uppercase tracking-wide">
+                {item}
+              </button>
+            ))}
+            <a href="https://wa.me/6285185443185" target="_blank" rel="noreferrer" className="bg-yellow-500 hover:bg-yellow-400 text-[#1a0b14] px-6 py-2 rounded-full font-bold text-sm transition-all transform hover:scale-105 shadow-lg shadow-yellow-500/20 flex items-center gap-2">
+              Daftar Batch 1
             </a>
-            <button onclick="document.getElementById('program').scrollIntoView({behavior: 'smooth'})" class="w-full sm:w-auto border border-white/10 py-4 px-10 rounded-2xl font-bold text-sm hover:bg-white/5">
-                LIHAT KURIKULUM
-            </button>
+          </div>
+          <button className="md:hidden text-yellow-500" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+            {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
+          </button>
         </div>
-    </section>
+        {isMobileMenuOpen && (
+          <div className="md:hidden absolute top-full left-0 w-full bg-[#2D0A1E] border-t border-white/10 p-6 flex flex-col gap-4 shadow-2xl animate-in slide-in-from-top-2 duration-300">
+            {['AI Center', 'Program', 'Keunggulan', 'Lokasi'].map((item) => (
+              <button key={item} onClick={() => scrollToSection(item.toLowerCase().replace(' ', '-'))} className="text-left text-slate-200 hover:text-yellow-500 font-medium py-2 border-b border-white/5 uppercase">
+                {item}
+              </button>
+            ))}
+            <a href="https://wa.me/6285185443185" className="bg-yellow-500 text-[#1a0b14] px-6 py-3 rounded-lg font-bold w-full mt-2 text-center uppercase">Hubungi WhatsApp</a>
+          </div>
+        )}
+      </nav>
 
-    <section id="ai-center" class="py-20 px-6">
-        <div class="max-w-4xl mx-auto">
-            <div class="flex items-center gap-4 mb-10">
-                <div class="w-12 h-12 rounded-full bg-yellow-500 flex items-center justify-center text-black shadow-lg shadow-yellow-500/40">
-                    <i class="fas fa-robot fa-lg"></i>
+      {/* Hero Section */}
+      <section className="relative pt-16 pb-24 lg:pt-32 lg:pb-32 overflow-hidden">
+        <div className="absolute top-0 right-0 w-2/3 h-full bg-gradient-to-l from-[#2D0A1E] to-transparent opacity-50 -z-10" />
+        <div className="container mx-auto px-6">
+          <div className="flex flex-col lg:flex-row items-center gap-16">
+            <div className="lg:w-1/2">
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-yellow-500/10 border border-yellow-500/30 rounded-full mb-6">
+                <span className="w-2 h-2 bg-yellow-500 rounded-full animate-ping" />
+                <span className="text-yellow-500 text-xs font-bold tracking-widest uppercase">Pusat Pelatihan Strategis</span>
+              </div>
+              <h1 className="text-4xl lg:text-6xl font-extrabold text-white leading-tight mb-6 uppercase">
+                Menuju Garis <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-yellow-600">Finish</span> Dengan Kemenangan.
+              </h1>
+              <p className="text-lg text-slate-300 mb-8 leading-relaxed border-l-4 border-yellow-500 pl-6 italic">
+                Persiapan elite TNI, POLRI, & Kedinasan. Unggul dalam Karakter, Akademik, dan Fisik melalui sistem pelatihan taktis.
+              </p>
+              
+              <div className="bg-white/5 backdrop-blur-sm border border-yellow-500/30 p-6 rounded-2xl mb-8 relative overflow-hidden group">
+                <div className="absolute top-0 right-0 bg-red-600 text-white text-[10px] font-bold px-3 py-1 rounded-bl-lg uppercase tracking-tighter">URGENT</div>
+                <div className="flex items-center gap-4">
+                  <div className="bg-red-600 p-3 rounded-lg text-white text-center min-w-[80px]">
+                    <span className="block text-[10px] uppercase font-bold">Diskon</span>
+                    <span className="block text-2xl font-extrabold">50%</span>
+                  </div>
+                  <div>
+                    <h3 className="text-white font-bold text-lg uppercase">Batch 1: Elite Squad</h3>
+                    <p className="text-slate-400 text-sm italic">Hanya 20 Kursi. Promo berakhir 1 Maret 2026.</p>
+                  </div>
                 </div>
-                <div>
-                    <h2 class="text-2xl font-black uppercase tracking-tighter italic">Imperium Tactical AI ✨</h2>
-                    <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Sistem Simulasi & Konsultasi Real-Time</p>
+                <div className="flex gap-6 mt-4 pt-4 border-t border-white/10">
+                   {['Hari', 'Jam', 'Menit'].map((unit, i) => (
+                     <div key={unit} className="text-center">
+                       <span className="text-xl font-bold text-white tracking-tighter">{Object.values(timeLeft)[i]}</span>
+                       <span className="text-[10px] text-slate-500 block uppercase font-bold">{unit}</span>
+                     </div>
+                   ))}
                 </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-4">
+                <a href="https://wa.me/6285185443185" className="flex items-center justify-center gap-2 bg-yellow-500 text-[#1a0b14] px-8 py-4 rounded-lg font-bold hover:bg-yellow-400 transition-all shadow-lg uppercase text-sm">
+                  Ambil Kuota Diskon <ChevronRight size={18} />
+                </a>
+                <button onClick={() => scrollToSection('program')} className="flex items-center justify-center gap-2 border border-slate-600 text-white px-8 py-4 rounded-lg font-bold hover:bg-white/5 transition-all uppercase text-sm">
+                  Lihat Kurikulum
+                </button>
+              </div>
             </div>
+          </div>
+        </div>
+      </section>
 
-            <div class="glass rounded-[2.5rem] overflow-hidden border-white/10 shadow-2xl min-h-[500px] flex flex-col">
-                <div class="flex border-b border-white/5 bg-white/5">
-                    <button id="tab-drill" onclick="switchTab('drill')" class="flex-1 py-5 text-[10px] font-black uppercase tracking-widest bg-yellow-500 text-black transition-all">
-                        <i class="fas fa-crosshairs mr-2"></i> Simulasi Soal
+      {/* --- AI CENTER SECTION --- */}
+      <section id="ai-center" className="py-20 bg-[#15050e] border-y border-white/5">
+        <div className="container mx-auto px-6">
+          <div className="flex flex-col md:flex-row items-center justify-between mb-12 gap-6">
+            <div>
+              <div className="flex items-center gap-3 mb-2">
+                <Brain className="text-yellow-500" size={32} />
+                <h2 className="text-3xl font-bold text-white uppercase italic">Imperium Tactical AI ✨</h2>
+              </div>
+              <p className="text-slate-400 max-w-xl text-sm italic">
+                Sistem simulasi CAT dan konsultasi strategi tempur real-time.
+              </p>
+            </div>
+            <div className="flex bg-[#2D0A1E] p-1 rounded-lg border border-white/10">
+              <button onClick={() => setAiMode('drill')} className={`px-6 py-2 rounded-md font-bold text-xs uppercase transition-all flex items-center gap-2 ${aiMode === 'drill' ? 'bg-yellow-500 text-[#1a0b14]' : 'text-slate-400'}`}>
+                <Target size={14} /> Latihan Kilat
+              </button>
+              <button onClick={() => setAiMode('consult')} className={`px-6 py-2 rounded-md font-bold text-xs uppercase transition-all flex items-center gap-2 ${aiMode === 'consult' ? 'bg-yellow-500 text-[#1a0b14]' : 'text-slate-400'}`}>
+                <MessageSquare size={14} /> Chat Mentor
+              </button>
+            </div>
+          </div>
+
+          <div className="bg-[#1a0b14] border border-white/10 rounded-2xl p-6 md:p-10 min-h-[500px] shadow-2xl relative flex flex-col">
+            {aiMode === 'drill' ? (
+              <div className="animate-in fade-in duration-500 flex-1 flex flex-col">
+                {!drillData ? (
+                  <div className="flex-1 flex flex-col items-center justify-center text-center">
+                    <Target size={48} className="text-yellow-500 mb-6 opacity-50" />
+                    <h3 className="text-xl font-bold text-white mb-6 uppercase tracking-widest">Pilih Sektor Latihan</h3>
+                    <div className="flex gap-4 mb-8">
+                      {['TWK', 'TIU', 'TKP'].map(cat => (
+                        <button key={cat} onClick={() => setDrillCategory(cat)} className={`w-20 py-3 rounded-xl border font-bold transition-all ${drillCategory === cat ? 'border-yellow-500 bg-yellow-500/20 text-yellow-500' : 'border-white/10 text-slate-500'}`}>{cat}</button>
+                      ))}
+                    </div>
+                    <button onClick={handleGenerateDrill} disabled={isLoading} className="bg-yellow-500 hover:bg-yellow-400 text-[#1a0b14] px-10 py-4 rounded-xl font-bold flex items-center gap-3 uppercase text-sm">
+                      {isLoading ? <Loader className="animate-spin" /> : <RefreshCw size={18} />} Mulai Simulasi
                     </button>
-                    <button id="tab-chat" onclick="switchTab('chat')" class="flex-1 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 transition-all">
-                        <i class="fas fa-comments mr-2"></i> Chat Mentor
-                    </button>
-                </div>
-                
-                <div id="drill-content" class="p-6 md:p-10 text-center flex-1 flex flex-col justify-center items-center">
-                    <div id="drill-initial">
-                        <div class="relative mb-8">
-                            <div class="absolute inset-0 bg-yellow-500 rounded-full blur-2xl opacity-20 animate-pulse"></div>
-                            <i class="fas fa-brain text-5xl text-yellow-500 relative"></i>
-                        </div>
-                        <h3 class="text-xl font-extrabold mb-4 uppercase italic">Sistem Siap Tempur</h3>
-                        <p class="text-xs text-slate-400 max-w-xs leading-relaxed mb-8">Tekan tombol di bawah untuk membangkitkan soal HOTS terbaru dari bank data Imperium AI.</p>
-                        <button onclick="generateQuestion()" id="btn-gen" class="border-2 border-yellow-500 text-yellow-500 px-10 py-3 rounded-xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-yellow-500 hover:text-black transition-all">
-                            Mulai Latihan Kilat
+                  </div>
+                ) : (
+                  <div className="max-w-3xl mx-auto w-full">
+                    <div className="flex justify-between items-center mb-8 border-b border-white/5 pb-4">
+                      <span className="text-yellow-500 font-bold tracking-[0.3em] text-xs uppercase">SOAL {drillCategory}</span>
+                      <button onClick={handleGenerateDrill} className="text-slate-500 hover:text-white text-xs flex items-center gap-2 uppercase font-bold"><RefreshCw size={14} /> Ganti Soal</button>
+                    </div>
+                    <h4 className="text-xl text-white mb-10 leading-relaxed font-medium italic">"{drillData.question}"</h4>
+                    <div className="grid gap-3 mb-10">
+                      {drillData.options.map((opt, idx) => (
+                        <button key={idx} onClick={() => setUserAnswer(idx)} disabled={userAnswer !== null} 
+                          className={`text-left p-4 rounded-xl border transition-all text-sm font-medium ${userAnswer === null ? 'border-white/10 text-slate-300 hover:bg-white/5' : idx === drillData.correctIndex ? 'border-green-500 bg-green-500/10 text-green-400' : userAnswer === idx ? 'border-red-500 bg-red-500/10 text-red-400' : 'border-white/5 text-slate-600'}`}>
+                          <span className="font-black mr-4 text-yellow-500">{String.fromCharCode(65 + idx)}.</span> {opt}
                         </button>
+                      ))}
                     </div>
-
-                    <div id="drill-display" class="hidden w-full text-left">
-                        <div class="mb-6 p-4 bg-white/5 rounded-2xl border border-yellow-500/20">
-                            <p id="q-text" class="text-sm md:text-base font-bold italic leading-relaxed"></p>
-                        </div>
-                        <div id="q-options" class="grid gap-3 mb-6"></div>
-                        <div id="q-expl" class="hidden p-4 bg-[#2D0A1E] border border-yellow-500/30 rounded-xl text-[11px] text-slate-300 italic mb-4"></div>
-                        <button onclick="generateQuestion()" class="text-yellow-500 text-[10px] font-bold uppercase tracking-widest"><i class="fas fa-sync mr-2"></i> Ganti Soal</button>
+                    {userAnswer !== null && (
+                      <div className="bg-[#2D0A1E] border-l-4 border-yellow-500 p-6 rounded-r-xl animate-in slide-in-from-left-2">
+                        <h5 className="text-yellow-500 font-bold mb-2 flex items-center gap-2 text-xs uppercase tracking-widest"><Brain size={16} /> Analisis Taktis</h5>
+                        <p className="text-slate-300 text-sm leading-relaxed italic">{drillData.explanation}</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="flex flex-col h-[500px] animate-in fade-in duration-500">
+                <div className="flex-1 overflow-y-auto space-y-4 pr-2 mb-6 scrollbar-hide">
+                  {chatHistory.map((msg, idx) => (
+                    <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                      <div className={`max-w-[85%] p-4 rounded-2xl text-sm ${msg.role === 'user' ? 'bg-yellow-500 text-[#1a0b14] rounded-br-none font-bold' : 'bg-[#2D0A1E] border border-white/10 text-slate-200 rounded-bl-none italic'}`}>
+                        {msg.role === 'model' && <div className="text-[10px] text-yellow-500 font-black mb-1 uppercase tracking-widest">Komandan AI</div>}
+                        {msg.text}
+                      </div>
                     </div>
+                  ))}
+                  <div ref={chatEndRef} />
                 </div>
-
-                <div id="chat-content" class="hidden p-6 flex-1 flex flex-col overflow-hidden h-[400px]">
-                    <div id="chat-box" class="flex-1 overflow-y-auto space-y-4 mb-4 pr-2 scrollbar-hide text-[11px]">
-                        <div class="bg-white/5 p-3 rounded-2xl rounded-bl-none max-w-[80%] border border-white/10">
-                            <p class="text-yellow-500 font-black mb-1 uppercase">Komandan AI:</p>
-                            <p>Siap, Calon Taruna! Ada kendala apa dalam persiapanmu? Tanyakan strategi atau materi padaku.</p>
-                        </div>
-                    </div>
-                    <div class="relative">
-                        <input type="text" id="chat-input" placeholder="Tanyakan sesuatu..." class="w-full bg-black/40 border border-white/10 rounded-xl py-3 px-4 text-xs focus:outline-none focus:border-yellow-500">
-                        <button onclick="sendMessage()" class="absolute right-2 top-2 bg-yellow-500 text-black p-2 rounded-lg"><i class="fas fa-paper-plane text-xs"></i></button>
-                    </div>
+                <div className="relative">
+                  <input type="text" value={chatInput} onChange={(e) => setChatInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && !isLoading && handleChatSend()} placeholder="Tanya strategi atau tips..." className="w-full bg-[#0f050b] border border-white/20 rounded-xl py-4 pl-6 pr-14 text-white text-sm focus:outline-none focus:border-yellow-500" />
+                  <button onClick={handleChatSend} disabled={isLoading || !chatInput.trim()} className="absolute right-2 top-2 p-2.5 bg-yellow-500 rounded-lg text-[#1a0b14] hover:bg-yellow-400 disabled:opacity-50 transition-all">
+                    {isLoading ? <Loader size={20} className="animate-spin" /> : <Send size={20} />}
+                  </button>
                 </div>
-            </div>
+              </div>
+            )}
+          </div>
         </div>
-    </section>
+      </section>
 
-    <section id="program" class="py-20 px-6 bg-[#2D0A1E]/30">
-        <div class="text-center mb-16">
-            <h2 class="text-2xl font-black uppercase tracking-tighter mb-2">4 Pilar Fondasi Imperium</h2>
-            <p class="text-xs text-slate-400 italic">Membentuk profil lulusan yang siap pakai dan tangguh.</p>
+      {/* Program Section */}
+      <section id="program" className="py-24 bg-[#2D0A1E]">
+        <div className="container mx-auto px-6 text-center">
+          <h2 className="text-3xl font-bold text-white mb-4 uppercase tracking-tighter italic">4 Pilar Fondasi Imperium</h2>
+          <div className="grid md:grid-cols-4 gap-6 mt-16">
+            {[
+              { title: 'AKADEMIK', icon: Target, desc: 'Kuasai TWK, TIU, & TKP secara mendalam.' },
+              { title: 'JASMANI', icon: Zap, desc: 'Fisik terukur standar kesemaptaan TNI/POLRI.' },
+              { title: 'PSIKOLOGI', icon: Users, desc: 'Mentalitas stabil melalui simulasi psikotes.' },
+              { title: 'MENTAL', icon: Shield, desc: 'Indoktrinasi disiplin karakter pemenang.' },
+            ].map((p, i) => (
+              <div key={i} className="bg-[#1a0b14] p-8 rounded-2xl border border-white/5 hover:border-yellow-500/50 transition-all group">
+                <div className="w-14 h-14 bg-yellow-500/10 rounded-xl flex items-center justify-center text-yellow-500 mb-6 mx-auto group-hover:scale-110 transition-transform">
+                  <p.icon size={30} />
+                </div>
+                <h3 className="text-lg font-bold text-white mb-3 uppercase italic tracking-widest">{p.title}</h3>
+                <p className="text-xs text-slate-500 leading-relaxed font-medium">{p.desc}</p>
+              </div>
+            ))}
+          </div>
         </div>
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-6xl mx-auto">
-            <div class="glass p-8 rounded-3xl text-center card-pilar">
-                <i class="fas fa-bullseye text-yellow-500 text-3xl mb-4"></i>
-                <h4 class="text-xs font-black uppercase mb-2">Akademik</h4>
-                <p class="text-[9px] text-slate-400 leading-relaxed">Penguasaan TWK, TIU, & TKP Mendalam.</p>
+      </section>
+
+      {/* Footer */}
+      <footer id="lokasi" className="bg-[#0f050b] py-16 border-t border-white/5">
+        <div className="container mx-auto px-6 grid md:grid-cols-3 gap-16">
+          <div>
+            <div className="flex items-center gap-2 mb-6">
+              <Shield className="text-yellow-500" size={28} />
+              <span className="text-xl font-bold text-white uppercase italic">IMPERIUM</span>
             </div>
-            <div class="glass p-8 rounded-3xl text-center card-pilar border-yellow-500/50 shadow-lg shadow-yellow-500/5">
-                <i class="fas fa-bolt text-yellow-500 text-3xl mb-4"></i>
-                <h4 class="text-xs font-black uppercase mb-2">Jasmani</h4>
-                <p class="text-[9px] text-slate-400 leading-relaxed">Pembinaan fisik terukur & Renang.</p>
+            <p className="text-xs text-slate-500 leading-relaxed italic">"Bukan sekadar lulus ujian, tapi membentuk karakter abdi negara yang tangguh."</p>
+          </div>
+          <div className="space-y-4">
+            <h4 className="text-white font-bold text-xs uppercase tracking-[0.3em] mb-6">Markas Batam</h4>
+            <div className="flex items-start gap-3 text-xs text-slate-400">
+              <MapPin size={16} className="text-yellow-500 shrink-0" />
+              <span>Ruko Trade Center Blok J No 11, Sagulung, Batam.</span>
             </div>
-            <div class="glass p-8 rounded-3xl text-center card-pilar">
-                <i class="fas fa-brain text-yellow-500 text-3xl mb-4"></i>
-                <h4 class="text-xs font-black uppercase mb-2">Psikologi</h4>
-                <p class="text-[9px] text-slate-400 leading-relaxed">Simulasi pembentukan mentalitas stabil.</p>
+            <div className="flex items-center gap-3 text-xs text-slate-400">
+              <Clock size={16} className="text-yellow-500 shrink-0" />
+              <span>Senin - Sabtu: 08:00 - 20:00 WIB</span>
             </div>
-            <div class="glass p-8 rounded-3xl text-center card-pilar">
-                <i class="fas fa-shield-halved text-yellow-500 text-3xl mb-4"></i>
-                <h4 class="text-xs font-black uppercase mb-2">Mental</h4>
-                <p class="text-[9px] text-slate-400 leading-relaxed">Indoktrinasi disiplin & kepemimpinan.</p>
-            </div>
+          </div>
+          <div className="space-y-3">
+             <h4 className="text-white font-bold text-xs uppercase tracking-[0.3em] mb-6">Kontak Elite</h4>
+             <a href="https://wa.me/6285185443185" className="block p-4 rounded-xl border border-white/5 bg-[#1a0b14] hover:border-yellow-500 transition-all">
+                <p className="text-[10px] text-slate-500 uppercase font-bold mb-1">Admin Utama</p>
+                <p className="text-white font-black italic">0851 8544 3185</p>
+             </a>
+          </div>
         </div>
-    </section>
-
-    <section id="keunggulan" class="py-20 px-6 bg-black/40">
-        <div class="max-w-6xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
-            <div>
-                <h3 class="text-yellow-500 font-bold uppercase tracking-widest text-[10px] mb-4">Why Us?</h3>
-                <h2 class="text-4xl font-black uppercase leading-[1.1] mb-8 italic">Sistem Pelatihan Taktis<br>Berstandar Institusi</h2>
-                <div class="space-y-5">
-                    <div class="flex items-start gap-4">
-                        <div class="mt-1 bg-green-500/20 text-green-500 p-1 rounded-full"><i class="fas fa-check text-[10px]"></i></div>
-                        <p class="text-sm font-bold text-slate-200 uppercase tracking-tight">Kelas Offline & Online Hybrid (Fleksibel)</p>
-                    </div>
-                    <div class="flex items-start gap-4">
-                        <div class="mt-1 bg-green-500/20 text-green-500 p-1 rounded-full"><i class="fas fa-check text-[10px]"></i></div>
-                        <p class="text-sm font-bold text-slate-200 uppercase tracking-tight">Tutor Berpengalaman & Praktisi Langsung</p>
-                    </div>
-                </div>
-            </div>
-            <div class="glass p-10 rounded-[3rem] border-white/5 relative shadow-2xl overflow-hidden">
-                <h3 class="text-xl font-black uppercase italic mb-8 border-b border-white/10 pb-4 tracking-tighter">Paket Batch 1 Elite Squad</h3>
-                <ul class="space-y-4 mb-10 text-xs font-bold">
-                    <li class="flex justify-between border-b border-white/5 pb-3"><span>1. KELAS OFFLINE INTENSIF</span> <i class="fas fa-star text-yellow-500"></i></li>
-                    <li class="flex justify-between border-b border-white/5 pb-3"><span>2. KELAS LIVE ZOOM ONLINE</span> <span class="bg-red-500 px-2 py-0.5 rounded text-[8px]">LIVE</span></li>
-                    <li class="flex justify-between border-b border-white/5 pb-3"><span>3. DRILLING SOAL SETIAP HARI</span> <i class="fas fa-fire text-orange-500"></i></li>
-                </ul>
-                <a href="https://wa.me/6285185443185" class="block w-full text-center gold-gradient py-4 rounded-2xl text-black font-black text-xs uppercase tracking-widest">Daftar Sekarang!</a>
-            </div>
+        <div className="mt-16 text-center text-[10px] text-slate-700 uppercase font-black tracking-widest">
+          &copy; 2026 Imperium Smart Class. Menuju Garis Finish.
         </div>
-    </section>
-
-    <footer id="lokasi" class="pt-20 pb-10 px-6 border-t border-white/10 bg-[#0f050b]">
-        <div class="max-w-6xl mx-auto grid md:grid-cols-3 gap-12 mb-20">
-            <div>
-                <div class="flex items-center gap-3 mb-6">
-                    <div class="text-yellow-500"><i class="fas fa-shield-halved fa-2xl"></i></div>
-                    <span class="text-xl font-black tracking-tighter">IMPERIUM</span>
-                </div>
-                <p class="text-xs text-slate-500 leading-relaxed mb-6">Bimbel spesialis kedinasan dengan kurikulum terstruktur. Kami tidak hanya meluluskan ujian, tapi membentuk karakter pemenang.</p>
-                <div class="flex gap-4">
-                    <a href="https://instagram.com/imperium.smartclass" class="w-10 h-10 rounded-full glass flex items-center justify-center hover:bg-yellow-500 hover:text-black transition"><i class="fab fa-instagram"></i></a>
-                    <a href="https://wa.me/6285185443185" class="w-10 h-10 rounded-full glass flex items-center justify-center hover:bg-yellow-500 hover:text-black transition"><i class="fab fa-whatsapp"></i></a>
-                </div>
-            </div>
-            <div>
-                <h4 class="text-[10px] font-black uppercase tracking-[0.2em] mb-8 text-yellow-500">Markas Komando</h4>
-                <div class="space-y-4 text-[11px] text-slate-400 font-bold uppercase">
-                    <p><i class="fas fa-map-marker-alt text-yellow-500 mr-2"></i> Ruko Trade Center Blok J No 11, Batam.</p>
-                    <p><i class="fas fa-clock text-yellow-500 mr-2"></i> Sen - Sab: 08.00 - 20.00</p>
-                </div>
-            </div>
-            <div>
-                <h4 class="text-[10px] font-black uppercase tracking-[0.2em] mb-8 text-yellow-500">Hubungi Admin</h4>
-                <div class="space-y-3">
-                    <a href="https://wa.me/6285185443185" class="block glass p-4 rounded-xl hover:border-yellow-500 transition">
-                        <p class="text-[8px] text-slate-500 font-bold mb-1 uppercase">Admin 1</p>
-                        <p class="text-sm font-black italic">0851 8544 3185</p>
-                    </a>
-                    <a href="https://wa.me/6285960184775" class="block glass p-4 rounded-xl hover:border-yellow-500 transition">
-                        <p class="text-[8px] text-slate-500 font-bold mb-1 uppercase">Admin 2</p>
-                        <p class="text-sm font-black italic">0859 6018 4775</p>
-                    </a>
-                </div>
-            </div>
-        </div>
-        <div class="text-center text-[8px] text-slate-700 uppercase tracking-widest font-black">&copy; 2026 Imperium Smart Class.</div>
-    </footer>
-
-    <script>
-        // --- 1. CONFIG (API KEY SUDAH TERPASANG) ---
-        const API_KEY = "AIzaSyBQu9PW-1Lhwc50EloRrqFnhqBWrYxUEwE";
-
-        // --- 2. TABS LOGIC ---
-        function switchTab(mode) {
-            const isDrill = mode === 'drill';
-            document.getElementById('drill-content').classList.toggle('hidden', !isDrill);
-            document.getElementById('chat-content').classList.toggle('hidden', isDrill);
-            document.getElementById('tab-drill').className = isDrill ? "flex-1 py-5 text-[10px] font-black uppercase tracking-widest bg-yellow-500 text-black transition-all" : "flex-1 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 transition-all";
-            document.getElementById('tab-chat').className = !isDrill ? "flex-1 py-5 text-[10px] font-black uppercase tracking-widest bg-yellow-500 text-black transition-all" : "flex-1 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 transition-all";
-        }
-
-        // --- 3. CORE AI ENGINE ---
-        async function askAI(prompt, isJson = false) {
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
-            try {
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        contents: [{parts: [{text: prompt}]}],
-                        generationConfig: isJson ? { responseMimeType: "application/json" } : {}
-                    })
-                });
-                const data = await response.json();
-                return data.candidates[0].content.parts[0].text;
-            } catch (e) { console.error(e); return null; }
-        }
-
-        // --- 4. DRILL LOGIC ---
-        async function generateQuestion() {
-            const btn = document.getElementById('btn-gen');
-            btn.innerText = "MEMBANGKITKAN...";
-            btn.disabled = true;
-
-            const prompt = "Buat 1 soal HOTS seleksi POLRI/TNI (TIU/TWK). Output JSON: { \"question\": \"soal\", \"options\": [\"A. \", \"B. \", \"C. \", \"D. \", \"E. \"], \"correctIndex\": 0, \"explanation\": \"penjelasan\" }";
-            const res = await askAI(prompt, true);
-            if(res) {
-                const data = JSON.parse(res);
-                document.getElementById('drill-initial').classList.add('hidden');
-                document.getElementById('drill-display').classList.remove('hidden');
-                document.getElementById('q-text').innerText = data.question;
-                document.getElementById('q-expl').innerText = "Analisis: " + data.explanation;
-                document.getElementById('q-expl').classList.add('hidden');
-                
-                const optBox = document.getElementById('q-options');
-                optBox.innerHTML = '';
-                data.options.forEach((opt, i) => {
-                    const oBtn = document.createElement('button');
-                    oBtn.className = "w-full text-left p-3 rounded-xl border border-white/10 text-[11px] hover:bg-white/5 transition";
-                    oBtn.innerText = opt;
-                    oBtn.onclick = () => {
-                        document.querySelectorAll('#q-options button').forEach(b => b.disabled = true);
-                        if(i === data.correctIndex) oBtn.classList.add('border-green-500', 'bg-green-500/20', 'text-green-400');
-                        else {
-                            oBtn.classList.add('border-red-500', 'bg-red-500/20', 'text-red-400');
-                            document.querySelectorAll('#q-options button')[data.correctIndex].classList.add('border-green-500', 'text-green-400');
-                        }
-                        document.getElementById('q-expl').classList.remove('hidden');
-                    };
-                    optBox.appendChild(oBtn);
-                });
-            }
-            btn.innerText = "Mulai Latihan Kilat";
-            btn.disabled = false;
-        }
-
-        // --- 5. CHAT LOGIC ---
-        async function sendMessage() {
-            const input = document.getElementById('chat-input');
-            const box = document.getElementById('chat-box');
-            if(!input.value.trim()) return;
-
-            const msg = input.value;
-            box.innerHTML += `<div class="bg-yellow-500/10 p-3 rounded-2xl ml-auto max-w-[80%] border border-yellow-500/20 text-right"><p class="text-yellow-500 font-black mb-1 text-[8px]">SAYA:</p><p>${msg}</p></div>`;
-            input.value = '';
-            box.scrollTop = box.scrollHeight;
-
-            const res = await askAI(`Kamu adalah Mentor Imperium, panggil user 'Ndan'. Jawab tegas & memotivasi: ${msg}`);
-            if(res) {
-                box.innerHTML += `<div class="bg-white/5 p-3 rounded-2xl max-w-[80%] border border-white/10"><p class="text-yellow-500 font-black mb-1 text-[8px]">KOMANDAN AI:</p><p>${res}</p></div>`;
-            }
-            box.scrollTop = box.scrollHeight;
-        }
-
-        // --- 6. COUNTDOWN ---
-        function updateCountdown() {
-            const target = new Date('March 1, 2026 00:00:00').getTime();
-            const now = new Date().getTime();
-            const diff = target - now;
-            if(diff > 0) {
-                document.getElementById('days').innerText = Math.floor(diff / (1000 * 60 * 60 * 24)).toString().padStart(2, '0');
-                document.getElementById('hours').innerText = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)).toString().padStart(2, '0');
-                document.getElementById('minutes').innerText = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)).toString().padStart(2, '0');
-            }
-        }
-        setInterval(updateCountdown, 1000); updateCountdown();
-    </script>
-</body>
-</html>
+      </footer>
+    </div>
+  );
+}
