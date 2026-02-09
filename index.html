@@ -1,0 +1,531 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { Shield, Users, Target, Zap, Phone, MapPin, CheckCircle, Clock, Star, ChevronRight, Menu, X, Instagram, Brain, MessageSquare, RefreshCw, Send, Loader } from 'lucide-react';
+
+export default function App() {
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0 });
+
+  // --- AI STATE ---
+  const [aiMode, setAiMode] = useState('drill'); // 'drill' or 'consult'
+  const [drillCategory, setDrillCategory] = useState('TWK');
+  const [drillData, setDrillData] = useState(null);
+  const [userAnswer, setUserAnswer] = useState(null);
+  const [chatHistory, setChatHistory] = useState([
+    { role: 'model', text: 'Siap! Saya Komandan AI Imperium. Ada yang bisa saya bantu untuk strategi persiapanmu?' }
+  ]);
+  const [chatInput, setChatInput] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const chatEndRef = useRef(null);
+
+  // --- AI LOGIC ---
+  const callGemini = async (prompt, isJson = false) => {
+    setIsLoading(true);
+    const apiKey = ""; // Disuntikkan oleh sistem runtime
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+
+    const systemInstruction = isJson 
+      ? "Anda adalah instruktur elite untuk persiapan tes TNI/POLRI/Kedinasan. Buatkan 1 soal latihan High Order Thinking Skill (HOTS) yang menantang. Output MURNI JSON tanpa markdown."
+      : "Anda adalah Komandan Mentor di Imperium Smart Class. Jawab dengan tegas, ringkas, memotivasi, dan taktis. Panggil user dengan sebutan 'Calon Taruna' atau 'Siswa'. Fokus pada strategi lulus seleksi.";
+
+    const generationConfig = isJson 
+      ? { responseMimeType: "application/json", responseSchema: { type: "OBJECT", properties: { question: {type: "STRING"}, options: {type: "ARRAY", items: {type: "STRING"}}, correctIndex: {type: "INTEGER"}, explanation: {type: "STRING"} } } }
+      : {};
+
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          systemInstruction: { parts: [{ text: systemInstruction }] },
+          generationConfig: generationConfig
+        })
+      });
+
+      const data = await response.json();
+      setIsLoading(false);
+      
+      if (data.error) {
+        console.error("Gemini Error:", data.error);
+        return null;
+      }
+      
+      const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+      return isJson ? JSON.parse(text) : text;
+
+    } catch (error) {
+      console.error("Fetch Error:", error);
+      setIsLoading(false);
+      return null;
+    }
+  };
+
+  const handleGenerateDrill = async () => {
+    setDrillData(null);
+    setUserAnswer(null);
+    const prompt = `Buatkan 1 soal pilihan ganda untuk kategori ${drillCategory} (Tes Seleksi Kompetensi Dasar). Pastikan opsi jawaban ada 5 (A-E).`;
+    const data = await callGemini(prompt, true);
+    if (data) setDrillData(data);
+  };
+
+  const handleChatSend = async () => {
+    if (!chatInput.trim()) return;
+    const userMsg = chatInput;
+    setChatHistory(prev => [...prev, { role: 'user', text: userMsg }]);
+    setChatInput('');
+    
+    const response = await callGemini(userMsg, false);
+    if (response) {
+      setChatHistory(prev => [...prev, { role: 'model', text: response }]);
+    }
+  };
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [chatHistory]);
+
+  // --- EXISTING EFFECTS ---
+  useEffect(() => {
+    const targetDate = new Date('2026-03-01T00:00:00');
+    const interval = setInterval(() => {
+      const now = new Date();
+      const difference = targetDate - now;
+      if (difference > 0) {
+        setTimeLeft({
+          days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+          hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
+          minutes: Math.floor((difference / 1000 / 60) % 60),
+        });
+      }
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const handleScroll = () => setIsScrolled(window.scrollY > 50);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const scrollToSection = (id) => {
+    const element = document.getElementById(id);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+      setIsMobileMenuOpen(false);
+    }
+  };
+
+  return (
+    <div className="font-sans text-slate-800 bg-[#1a0b14] min-h-screen selection:bg-yellow-500 selection:text-slate-900">
+      
+      {/* Top Bar */}
+      <div className="bg-[#2D0A1E] text-white py-2 text-xs md:text-sm border-b border-white/10">
+        <div className="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-2">
+          <div className="flex items-center gap-4">
+            <span className="flex items-center gap-1"><Phone size={14} className="text-yellow-500" /> 0851 8544 3185</span>
+            <span className="hidden md:inline text-white/20">|</span>
+            <span className="flex items-center gap-1"><Phone size={14} className="text-yellow-500" /> 0859 6018 4775</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <MapPin size={14} className="text-yellow-500" />
+            <span>Ruko Trade Center Blok J no 11, Sagulung</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Navigation */}
+      <nav className={`sticky top-0 z-50 transition-all duration-300 border-b border-white/5 ${isScrolled ? 'bg-[#1a0b14]/95 backdrop-blur-md py-3 shadow-xl' : 'bg-[#1a0b14] py-5'}`}>
+        <div className="container mx-auto px-6 flex justify-between items-center">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-lg flex items-center justify-center shadow-lg shadow-yellow-500/20">
+              <Shield className="text-[#1a0b14] fill-current" size={24} />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold text-white leading-none tracking-wide">IMPERIUM</h1>
+              <p className="text-[10px] text-yellow-500 tracking-[0.2em] font-bold">SMART CLASS</p>
+            </div>
+          </div>
+          <div className="hidden md:flex items-center gap-8">
+            {['AI Center', 'Program', 'Keunggulan', 'Fasilitas', 'Lokasi'].map((item) => (
+              <button key={item} onClick={() => scrollToSection(item.toLowerCase().replace(' ', '-'))} className="text-sm font-medium text-slate-300 hover:text-yellow-400 transition-colors uppercase tracking-wide">
+                {item}
+              </button>
+            ))}
+            <a href="https://wa.me/6285185443185" target="_blank" rel="noreferrer" className="bg-yellow-500 hover:bg-yellow-400 text-[#1a0b14] px-6 py-2 rounded-full font-bold text-sm transition-all transform hover:scale-105 shadow-lg shadow-yellow-500/20 flex items-center gap-2">
+              Daftar Batch 1
+            </a>
+          </div>
+          <button className="md:hidden text-yellow-500" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+            {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
+          </button>
+        </div>
+        {isMobileMenuOpen && (
+          <div className="md:hidden absolute top-full left-0 w-full bg-[#2D0A1E] border-t border-white/10 p-6 flex flex-col gap-4 shadow-2xl">
+            {['AI Center', 'Program', 'Keunggulan', 'Fasilitas', 'Lokasi'].map((item) => (
+              <button key={item} onClick={() => scrollToSection(item.toLowerCase().replace(' ', '-'))} className="text-left text-slate-200 hover:text-yellow-500 font-medium py-2 border-b border-white/5">
+                {item}
+              </button>
+            ))}
+            <button className="bg-yellow-500 text-[#1a0b14] px-6 py-3 rounded-lg font-bold w-full mt-2">Hubungi WhatsApp</button>
+          </div>
+        )}
+      </nav>
+
+      {/* Hero Section */}
+      <section className="relative pt-16 pb-24 lg:pt-32 lg:pb-32 overflow-hidden">
+        <div className="absolute top-0 right-0 w-2/3 h-full bg-gradient-to-l from-[#2D0A1E] to-transparent opacity-50 -z-10" />
+        <div className="absolute top-20 right-20 w-72 h-72 bg-yellow-500/10 rounded-full blur-3xl -z-10 animate-pulse" />
+        <div className="container mx-auto px-6">
+          <div className="flex flex-col lg:flex-row items-center gap-16">
+            <div className="lg:w-1/2">
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-yellow-500/10 border border-yellow-500/30 rounded-full mb-6">
+                <span className="w-2 h-2 bg-yellow-500 rounded-full animate-ping" />
+                <span className="text-yellow-500 text-xs font-bold tracking-widest uppercase">Pusat Pelatihan Strategis</span>
+              </div>
+              <h1 className="text-4xl lg:text-6xl font-extrabold text-white leading-tight mb-6">
+                Menuju Garis <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-yellow-600">Finish</span> Dengan Kemenangan.
+              </h1>
+              <p className="text-lg text-slate-300 mb-8 leading-relaxed border-l-4 border-yellow-500 pl-6">
+                Spesialis persiapan masuk TNI, POLRI, & Kedinasan. Unggul dalam Karakter, Akademik, dan Fisik melalui sistem pelatihan taktis berstandar institusi.
+              </p>
+              <div className="bg-white/5 backdrop-blur-sm border border-yellow-500/30 p-6 rounded-2xl mb-8 relative overflow-hidden group">
+                <div className="absolute top-0 right-0 bg-red-600 text-white text-xs font-bold px-3 py-1 rounded-bl-lg">URGENT</div>
+                <div className="flex items-center gap-4">
+                  <div className="bg-red-600 p-3 rounded-lg text-white text-center min-w-[80px]">
+                    <span className="block text-xs uppercase font-bold">Diskon</span>
+                    <span className="block text-2xl font-extrabold">50%</span>
+                  </div>
+                  <div>
+                    <h3 className="text-white font-bold text-lg">Batch 1: Elite Squad</h3>
+                    <p className="text-slate-400 text-sm">Hanya untuk <span className="text-yellow-400 font-bold">20 Orang Pertama</span>. Promo berakhir 1 Maret 2026.</p>
+                  </div>
+                </div>
+                <div className="flex gap-4 mt-4 pt-4 border-t border-white/10">
+                   {['Hari', 'Jam', 'Menit'].map((unit, i) => (
+                     <div key={unit} className="text-center">
+                       <span className="text-xl font-bold text-white">{Object.values(timeLeft)[i]}</span>
+                       <span className="text-[10px] text-slate-400 block uppercase">{unit}</span>
+                     </div>
+                   ))}
+                </div>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-4">
+                <a href="https://wa.me/6285185443185" className="flex items-center justify-center gap-2 bg-yellow-500 text-[#1a0b14] px-8 py-4 rounded-lg font-bold hover:bg-yellow-400 transition-all shadow-lg hover:shadow-yellow-500/20">
+                  Ambil Kuota Diskon <ChevronRight size={20} />
+                </a>
+                <button onClick={() => scrollToSection('program')} className="flex items-center justify-center gap-2 border border-slate-600 text-white px-8 py-4 rounded-lg font-bold hover:bg-white/5 transition-all">
+                  Lihat Kurikulum
+                </button>
+              </div>
+            </div>
+            <div className="lg:w-1/2 relative">
+               <div className="relative z-10 grid grid-cols-2 gap-4">
+                 <img src="https://images.unsplash.com/photo-1595152452543-e5cca283b514?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" alt="Academic" className="rounded-2xl shadow-2xl border-2 border-[#2D0A1E] transform translate-y-8" />
+                 <img src="https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" alt="Physical" className="rounded-2xl shadow-2xl border-2 border-yellow-500" />
+               </div>
+               <div className="absolute -bottom-10 -left-10 w-full h-full border-2 border-dashed border-white/10 rounded-2xl -z-10" />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* --- NEW GEMINI AI SECTION --- */}
+      <section id="ai-center" className="py-20 bg-[#15050e] border-y border-white/5 relative overflow-hidden">
+        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-yellow-500 to-transparent opacity-50"></div>
+        <div className="container mx-auto px-6">
+          <div className="flex flex-col md:flex-row items-center justify-between mb-12 gap-6">
+            <div>
+              <div className="flex items-center gap-3 mb-2">
+                <Brain className="text-yellow-500" size={32} />
+                <h2 className="text-3xl font-bold text-white">Imperium Tactical AI ✨</h2>
+              </div>
+              <p className="text-slate-400 max-w-xl">
+                Sistem kecerdasan buatan terintegrasi untuk simulasi soal (CAT) dan konsultasi strategi tempur secara real-time.
+              </p>
+            </div>
+            <div className="flex bg-[#2D0A1E] p-1 rounded-lg border border-white/10">
+              <button 
+                onClick={() => setAiMode('drill')}
+                className={`px-6 py-2 rounded-md font-bold text-sm transition-all flex items-center gap-2 ${aiMode === 'drill' ? 'bg-yellow-500 text-[#1a0b14]' : 'text-slate-400 hover:text-white'}`}
+              >
+                <Target size={16} /> Latihan Kilat
+              </button>
+              <button 
+                onClick={() => setAiMode('consult')}
+                className={`px-6 py-2 rounded-md font-bold text-sm transition-all flex items-center gap-2 ${aiMode === 'consult' ? 'bg-yellow-500 text-[#1a0b14]' : 'text-slate-400 hover:text-white'}`}
+              >
+                <MessageSquare size={16} /> Konsultasi Mentor
+              </button>
+            </div>
+          </div>
+
+          <div className="bg-[#1a0b14] border border-white/10 rounded-2xl p-6 md:p-8 min-h-[400px] shadow-2xl relative">
+            {/* DRILL MODE */}
+            {aiMode === 'drill' && (
+              <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                {!drillData ? (
+                  <div className="flex flex-col items-center justify-center h-full text-center py-12">
+                    <div className="bg-yellow-500/10 p-4 rounded-full mb-6">
+                      <Target size={48} className="text-yellow-500" />
+                    </div>
+                    <h3 className="text-2xl font-bold text-white mb-2">Pilih Sektor Latihan</h3>
+                    <p className="text-slate-400 mb-8">Pilih kategori soal untuk memulai simulasi tactical.</p>
+                    
+                    <div className="flex flex-wrap justify-center gap-4 mb-8">
+                      {['TWK', 'TIU', 'TKP'].map(cat => (
+                        <button 
+                          key={cat}
+                          onClick={() => setDrillCategory(cat)}
+                          className={`px-6 py-3 rounded-xl border font-bold transition-all ${drillCategory === cat ? 'border-yellow-500 bg-yellow-500/20 text-yellow-500' : 'border-white/10 text-slate-400 hover:border-white/30'}`}
+                        >
+                          {cat}
+                        </button>
+                      ))}
+                    </div>
+
+                    <button 
+                      onClick={handleGenerateDrill}
+                      disabled={isLoading}
+                      className="bg-yellow-500 hover:bg-yellow-400 text-[#1a0b14] px-10 py-4 rounded-xl font-bold text-lg flex items-center gap-3 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isLoading ? <Loader className="animate-spin" /> : <RefreshCw />}
+                      Generate Soal AI
+                    </button>
+                  </div>
+                ) : (
+                  <div className="max-w-3xl mx-auto">
+                    <div className="flex justify-between items-center mb-6 border-b border-white/10 pb-4">
+                      <span className="text-yellow-500 font-bold tracking-widest text-sm">SOAL {drillCategory}</span>
+                      <button onClick={handleGenerateDrill} className="text-slate-400 hover:text-white text-sm flex items-center gap-2">
+                        <RefreshCw size={14} /> Ganti Soal
+                      </button>
+                    </div>
+                    <h4 className="text-xl md:text-2xl font-medium text-white mb-8 leading-relaxed">
+                      {drillData.question}
+                    </h4>
+                    <div className="space-y-3 mb-8">
+                      {drillData.options.map((opt, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => setUserAnswer(idx)}
+                          disabled={userAnswer !== null}
+                          className={`w-full text-left p-4 rounded-xl border transition-all ${
+                            userAnswer === null 
+                              ? 'border-white/10 text-slate-300 hover:bg-white/5' 
+                              : userAnswer === idx 
+                                ? idx === drillData.correctIndex 
+                                  ? 'border-green-500 bg-green-500/20 text-green-400'
+                                  : 'border-red-500 bg-red-500/20 text-red-400'
+                                : idx === drillData.correctIndex
+                                  ? 'border-green-500 bg-green-500/20 text-green-400'
+                                  : 'border-white/10 text-slate-500 opacity-50'
+                          }`}
+                        >
+                          <span className="font-bold mr-4">{String.fromCharCode(65 + idx)}.</span>
+                          {opt}
+                        </button>
+                      ))}
+                    </div>
+                    
+                    {userAnswer !== null && (
+                      <div className="bg-[#2D0A1E] border border-yellow-500/30 p-6 rounded-xl animate-in fade-in zoom-in-95 duration-300">
+                        <h5 className="text-yellow-500 font-bold mb-2 flex items-center gap-2">
+                          <Brain size={18} /> Analisis Jawaban
+                        </h5>
+                        <p className="text-slate-300 leading-relaxed">{drillData.explanation}</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* CONSULT MODE */}
+            {aiMode === 'consult' && (
+              <div className="flex flex-col h-[500px] animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <div className="flex-1 overflow-y-auto space-y-4 pr-2 mb-4 scrollbar-thin scrollbar-thumb-yellow-500/20 scrollbar-track-transparent">
+                  {chatHistory.map((msg, idx) => (
+                    <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                      <div className={`max-w-[80%] p-4 rounded-2xl ${
+                        msg.role === 'user' 
+                          ? 'bg-yellow-500 text-[#1a0b14] rounded-br-none' 
+                          : 'bg-[#2D0A1E] border border-white/10 text-slate-200 rounded-bl-none'
+                      }`}>
+                        {msg.role === 'model' && <div className="text-xs text-yellow-500 font-bold mb-1 uppercase">Komandan AI</div>}
+                        <p className="text-sm md:text-base leading-relaxed whitespace-pre-wrap">{msg.text}</p>
+                      </div>
+                    </div>
+                  ))}
+                  {isLoading && (
+                    <div className="flex justify-start">
+                      <div className="bg-[#2D0A1E] border border-white/10 p-4 rounded-2xl rounded-bl-none flex items-center gap-2">
+                        <Loader size={16} className="text-yellow-500 animate-spin" />
+                        <span className="text-slate-400 text-sm">Mengetik strategi...</span>
+                      </div>
+                    </div>
+                  )}
+                  <div ref={chatEndRef} />
+                </div>
+                
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={chatInput}
+                    onChange={(e) => setChatInput(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && handleGenerateDrill()} // Typo fix logic handled in button
+                    onKeyDown={(e) => e.key === 'Enter' && !isLoading && handleChatSend()}
+                    placeholder="Tanya strategi belajar atau tips mental..."
+                    className="w-full bg-[#0f050b] border border-white/20 rounded-xl py-4 pl-6 pr-14 text-white placeholder:text-slate-600 focus:outline-none focus:border-yellow-500 transition-colors"
+                  />
+                  <button 
+                    onClick={handleChatSend}
+                    disabled={isLoading || !chatInput.trim()}
+                    className="absolute right-2 top-2 p-2 bg-yellow-500 rounded-lg text-[#1a0b14] hover:bg-yellow-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                  >
+                    <Send size={20} />
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* The 4 Pillars Section */}
+      <section id="program" className="py-20 bg-[#2D0A1E]">
+        <div className="container mx-auto px-6">
+          <div className="text-center max-w-2xl mx-auto mb-16">
+            <h2 className="text-3xl font-bold text-white mb-4">4 Pilar Fondasi Imperium</h2>
+            <p className="text-slate-300">Kami tidak hanya mengajarkan materi, kami membentuk profil lulusan yang siap pakai.</p>
+          </div>
+          <div className="grid md:grid-cols-4 gap-6">
+            {[
+              { title: 'AKADEMIK', icon: Target, desc: 'Penguasaan materi Tes Wawasan Kebangsaan (TWK), TIU, & TKP mendalam.' },
+              { title: 'JASMANI', icon: Zap, desc: 'Pembinaan fisik terukur standar kesemaptaan B & renang.' },
+              { title: 'PSIKOLOGI', icon: Users, desc: 'Simulasi tes psikologi untuk membentuk mentalitas stabil.' },
+              { title: 'MENTAL', icon: Shield, desc: 'Indoktrinasi disiplin dan karakter kepemimpinan.' },
+            ].map((pilar, idx) => (
+              <div key={idx} className="bg-[#1a0b14] p-8 rounded-xl border border-white/5 hover:border-yellow-500 transition-all group">
+                <div className="w-14 h-14 bg-yellow-500/10 rounded-full flex items-center justify-center text-yellow-500 mb-6 group-hover:bg-yellow-500 group-hover:text-[#1a0b14] transition-colors">
+                  <pilar.icon size={28} />
+                </div>
+                <h3 className="text-xl font-bold text-white mb-3">{pilar.title}</h3>
+                <p className="text-sm text-slate-400 leading-relaxed">{pilar.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Keunggulan & Fasilitas */}
+      <section id="keunggulan" className="py-20 bg-[#1a0b14]">
+        <div className="container mx-auto px-6">
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
+            <div>
+               <h2 className="text-yellow-500 font-bold tracking-widest uppercase mb-2">Kenapa Memilih Kami?</h2>
+               <h3 className="text-3xl lg:text-4xl font-bold text-white mb-8">Sistem Pelatihan Taktis Berstandar Institusi</h3>
+               <div className="space-y-6">
+                 {[
+                   'Kelas Offline & Online Hybrid (Fleksibel)',
+                   'Didampingi Tutor Berpengalaman & Praktisi',
+                   'Latihan Intensif Sebelum Tes (Drilling Soal)',
+                   'Try-Out & Evaluasi Mingguan (CAT System)',
+                   'Monitoring Progress Real-time via WhatsApp',
+                   'Free E-Book Premium & Grup Diskusi Eksklusif'
+                 ].map((item, idx) => (
+                   <div key={idx} className="flex items-start gap-4">
+                     <CheckCircle className="text-yellow-500 shrink-0 mt-1" size={20} />
+                     <span className="text-slate-200 font-medium text-lg">{item}</span>
+                   </div>
+                 ))}
+               </div>
+               <div className="mt-10 p-6 bg-[#2D0A1E] rounded-xl border-l-4 border-yellow-500">
+                 <p className="text-white italic">"Fokus kami bukan hanya meluluskan Anda pada ujian tulis, tetapi mempersiapkan Anda bertahan dalam pendidikan kedinasan yang sebenarnya."</p>
+               </div>
+            </div>
+            <div className="bg-gradient-to-br from-[#2D0A1E] to-[#1a0b14] p-8 rounded-3xl border border-white/10 relative">
+               <div className="absolute top-4 right-4 text-white/5 font-black text-9xl z-0">01</div>
+               <h3 className="text-2xl font-bold text-white mb-6 relative z-10">Paket Belajar Batch 1</h3>
+               <ul className="space-y-4 relative z-10">
+                 <li className="bg-white/5 p-4 rounded-lg flex justify-between items-center hover:bg-white/10 transition-colors cursor-default">
+                    <span className="text-white font-bold">1. Kelas Offline Intensif</span>
+                    <Star size={16} className="text-yellow-500 fill-current" />
+                 </li>
+                 <li className="bg-white/5 p-4 rounded-lg flex justify-between items-center hover:bg-white/10 transition-colors cursor-default">
+                    <span className="text-white font-bold">2. Kelas Online/Zoom</span>
+                    <span className="text-xs bg-green-500 text-white px-2 py-1 rounded">Live</span>
+                 </li>
+                 <li className="bg-white/5 p-4 rounded-lg flex justify-between items-center hover:bg-white/10 transition-colors cursor-default">
+                    <span className="text-white font-bold">3. E-book + Akses Grup</span>
+                    <span className="text-xs text-slate-400">Lifetime</span>
+                 </li>
+               </ul>
+               <div className="mt-8 pt-8 border-t border-white/10 text-center">
+                 <p className="text-slate-400 text-sm mb-2">Penawaran Spesial Berakhir Dalam:</p>
+                 <div className="text-yellow-500 font-bold text-xl">{timeLeft.days} Hari : {timeLeft.hours} Jam</div>
+               </div>
+               <button className="w-full bg-yellow-500 text-[#1a0b14] font-bold py-4 rounded-xl mt-6 hover:bg-yellow-400 transition-colors shadow-lg">
+                 DAFTAR SEKARANG!!!
+               </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer / Location */}
+      <footer id="lokasi" className="bg-[#0f050b] text-slate-400 py-12 border-t border-white/10">
+        <div className="container mx-auto px-6">
+          <div className="grid md:grid-cols-3 gap-12">
+            <div>
+              <div className="flex items-center gap-2 mb-6">
+                <Shield className="text-yellow-500" size={32} />
+                <span className="text-2xl font-bold text-white">IMPERIUM</span>
+              </div>
+              <p className="text-sm leading-relaxed mb-6">
+                Bimbel spesialis kedinasan dengan kurikulum terstruktur dan pelatih profesional. Kami siap mengantar Anda menuju seragam impian.
+              </p>
+              <div className="flex gap-4">
+                <a href="https://instagram.com/imperium.smartclass" className="w-10 h-10 bg-[#2D0A1E] rounded-full flex items-center justify-center hover:bg-yellow-500 hover:text-[#1a0b14] transition-colors">
+                  <Instagram size={20} />
+                </a>
+                <a href="#" className="w-10 h-10 bg-[#2D0A1E] rounded-full flex items-center justify-center hover:bg-yellow-500 hover:text-[#1a0b14] transition-colors">
+                  <Phone size={20} />
+                </a>
+              </div>
+            </div>
+            <div>
+              <h4 className="text-white font-bold mb-6 uppercase tracking-wide text-sm">Markas Komando</h4>
+              <ul className="space-y-4 text-sm">
+                <li className="flex items-start gap-3">
+                  <MapPin className="text-yellow-500 mt-1 shrink-0" size={16} />
+                  <span>Ruko Trade Center Blok J no 11, Sagulung, Batam.</span>
+                </li>
+                <li className="flex items-center gap-3">
+                  <Clock className="text-yellow-500 shrink-0" size={16} />
+                  <span>Senin - Sabtu: 08.00 - 20.00 WIB</span>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="text-white font-bold mb-6 uppercase tracking-wide text-sm">Hubungi Kami</h4>
+              <div className="space-y-3">
+                <a href="https://wa.me/6285185443185" className="block bg-[#2D0A1E] border border-white/10 p-4 rounded-lg hover:border-yellow-500 transition-colors group">
+                  <div className="text-xs text-slate-500 mb-1 group-hover:text-yellow-500">Admin 1</div>
+                  <div className="text-white font-bold">0851 8544 3185</div>
+                </a>
+                <a href="https://wa.me/6285960184775" className="block bg-[#2D0A1E] border border-white/10 p-4 rounded-lg hover:border-yellow-500 transition-colors group">
+                  <div className="text-xs text-slate-500 mb-1 group-hover:text-yellow-500">Admin 2</div>
+                  <div className="text-white font-bold">0859 6018 4775</div>
+                </a>
+              </div>
+            </div>
+          </div>
+          <div className="border-t border-white/5 mt-12 pt-8 text-center text-xs">
+            <p>&copy; 2026 Imperium Smart Class. Menuju Garis Finish.</p>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+}
