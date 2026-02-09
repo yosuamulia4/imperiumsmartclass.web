@@ -3,107 +3,136 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IMPERIUM SMART CLASS</title>
+    <title>IMPERIUM SMART CLASS | Menuju Garis Finish</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
-        body { background-color: #1a0b14; color: white; font-family: sans-serif; }
-        .gold-glow { text-shadow: 0 0 10px rgba(251, 191, 36, 0.5); }
-        .glass { background: rgba(45, 10, 30, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(251, 191, 36, 0.2); }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #1a0b14; color: white; overflow-x: hidden; }
+        .glass { background: rgba(45, 10, 30, 0.6); backdrop-filter: blur(12px); border: 1px solid rgba(251, 191, 36, 0.2); }
+        .gold-text { background: linear-gradient(to right, #fbbf24, #d97706); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .animate-float { animation: float 3s ease-in-out infinite; }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
     </style>
 </head>
 <body>
-    <div id="root"></div>
 
-    <script type="text/babel">
-        function App() {
-            const [tab, setTab] = React.useState('drill');
-            const [timeLeft, setTimeLeft] = React.useState({ d: 20, h: 5, m: 30 });
+    <nav className="sticky top-0 z-50 glass py-4 px-6 flex justify-between items-center border-b border-white/5">
+        <div class="flex items-center gap-2">
+            <div class="bg-yellow-500 p-2 rounded-lg text-black shadow-lg shadow-yellow-500/20">
+                <i class="fas fa-shield-alt fa-lg"></i>
+            </div>
+            <div>
+                <h1 class="font-extrabold text-xl tracking-tighter leading-none text-white">IMPERIUM</h1>
+                <p class="text-[9px] text-yellow-500 font-bold uppercase tracking-[0.2em]">Smart Class</p>
+            </div>
+        </div>
+        <a href="https://wa.me/6285185443185" class="bg-yellow-500 text-black px-5 py-2 rounded-full font-bold text-xs hover:scale-105 transition-transform">DAFTAR</a>
+    </nav>
 
-            return (
-                <div className="min-h-screen">
-                    {/* NAV */}
-                    <nav className="p-5 flex justify-between items-center border-b border-white/10 sticky top-0 bg-[#1a0b14] z-50">
-                        <div className="flex items-center gap-3">
-                            <div className="bg-yellow-500 p-2 rounded-lg text-black"><i className="fas fa-shield-alt"></i></div>
-                            <div>
-                                <h1 className="font-bold tracking-tighter">IMPERIUM</h1>
-                                <p className="text-[10px] text-yellow-500 font-bold uppercase tracking-widest">Smart Class</p>
-                            </div>
-                        </div>
-                        <a href="https://wa.me/6285185443185" className="bg-yellow-500 text-black px-4 py-2 rounded-full font-bold text-xs">DAFTAR</a>
-                    </nav>
+    <header class="relative pt-12 pb-20 px-6 text-center overflow-hidden">
+        <div class="absolute top-10 left-1/2 -translate-x-1/2 w-64 h-64 bg-yellow-500/10 rounded-full blur-[80px] -z-10"></div>
+        
+        <div class="inline-flex items-center gap-2 border border-yellow-500/30 px-4 py-1 rounded-full text-[10px] font-bold text-yellow-500 mb-8 uppercase tracking-widest bg-yellow-500/5">
+            <span class="w-2 h-2 bg-yellow-500 rounded-full animate-ping"></span>
+            Pusat Pelatihan Strategis TNI/POLRI
+        </div>
+        
+        <h1 class="text-4xl md:text-6xl font-extrabold mb-6 italic leading-[1.1] uppercase">
+            Menuju Garis <span class="gold-text underline">Finish</span><br>Dengan Kemenangan
+        </h1>
+        
+        <p class="text-slate-400 text-sm md:text-base max-w-lg mx-auto mb-10 leading-relaxed">
+            Spesialis persiapan masuk <span class="text-white font-bold">TNI, POLRI, & Kedinasan</span>. Unggul dalam Karakter, Akademik, dan Fisik dengan metode drilling taktis.
+        </p>
 
-                    {/* HERO */}
-                    <header className="p-8 text-center py-16">
-                        <div className="inline-block border border-yellow-500/50 px-3 py-1 rounded-full text-[10px] font-bold text-yellow-500 mb-6 uppercase">Pusat Pelatihan Strategis</div>
-                        <h1 className="text-4xl font-extrabold mb-6 italic uppercase">Menuju Garis <span className="text-yellow-500">Finish</span> Dengan Kemenangan</h1>
-                        <p className="text-slate-400 text-sm max-w-md mx-auto mb-8">Spesialis persiapan TNI, POLRI, & Kedinasan. Unggul dalam Karakter, Akademik, dan Fisik.</p>
-                        
-                        <div className="glass p-6 rounded-2xl max-w-xs mx-auto mb-10 border-yellow-500">
-                            <p className="text-[10px] font-bold text-red-500 mb-3 uppercase tracking-tighter">Penawaran Batch 1 Berakhir:</p>
-                            <div className="flex justify-around font-bold">
-                                <div><p className="text-2xl">{timeLeft.d}</p><p className="text-[8px] text-slate-500">HARI</p></div>
-                                <div><p className="text-2xl text-yellow-500">:</p></div>
-                                <div><p className="text-2xl">{timeLeft.h}</p><p className="text-[8px] text-slate-500">JAM</p></div>
-                                <div><p className="text-2xl text-yellow-500">:</p></div>
-                                <div><p className="text-2xl">{timeLeft.m}</p><p className="text-[8px] text-slate-500">MENIT</p></div>
-                            </div>
-                        </div>
-                        <button className="w-full max-w-xs bg-yellow-500 text-black py-4 rounded-xl font-black shadow-lg shadow-yellow-500/20">AMBIL DISKON 50%</button>
-                    </header>
+        <div class="glass p-6 rounded-3xl max-w-sm mx-auto mb-10 border-yellow-500/50 shadow-2xl">
+            <p class="text-[10px] font-bold text-red-500 mb-4 uppercase tracking-[0.2em] flex items-center justify-center gap-2">
+                <i class="fas fa-fire"></i> Batch 1 Segera Ditutup
+            </p>
+            <div class="flex justify-around items-center">
+                <div class="text-center">
+                    <p class="text-3xl font-black text-white">20</p>
+                    <p class="text-[9px] text-slate-500 font-bold uppercase">Hari</p>
+                </div>
+                <div class="text-2xl text-yellow-500 font-bold">:</div>
+                <div class="text-center">
+                    <p class="text-3xl font-black text-white">05</p>
+                    <p class="text-[9px] text-slate-500 font-bold uppercase">Jam</p>
+                </div>
+                <div class="text-2xl text-yellow-500 font-bold">:</div>
+                <div class="text-center">
+                    <p class="text-3xl font-black text-white">45</p>
+                    <p class="text-[9px] text-slate-500 font-bold uppercase">Menit</p>
+                </div>
+            </div>
+        </div>
 
-                    {/* AI SECTION */}
-                    <section className="p-6 bg-[#0f050b] border-y border-white/5 py-12">
-                        <div className="text-center mb-8">
-                            <h2 className="text-xl font-bold flex items-center justify-center gap-2"><i className="fas fa-brain text-yellow-500"></i> IMPERIUM TACTICAL AI</h2>
-                            <p className="text-[10px] text-slate-500 mt-2">Sistem Simulasi & Konsultasi Real-time</p>
-                        </div>
-                        
-                        <div className="glass rounded-3xl overflow-hidden min-h-[300px]">
-                            <div className="flex border-b border-white/10 text-[10px] font-bold">
-                                <button onClick={() => setTab('drill')} className={`flex-1 py-4 ${tab==='drill' ? 'bg-yellow-500 text-black' : ''}`}>SIMULASI SOAL</button>
-                                <button onClick={() => setTab('chat')} className={`flex-1 py-4 ${tab==='chat' ? 'bg-yellow-500 text-black' : ''}`}>KONSULTASI</button>
-                            </div>
-                            
-                            <div className="p-8 text-center">
-                                {tab === 'drill' ? (
-                                    <div className="animate-pulse">
-                                        <i className="fas fa-crosshairs text-4xl text-yellow-500/20 mb-4"></i>
-                                        <p className="text-sm text-slate-400">Menghubungkan ke Server CAT...</p>
-                                        <button className="mt-6 border border-yellow-500 text-yellow-500 px-6 py-2 rounded-lg text-xs font-bold uppercase">Mulai Simulasi</button>
-                                    </div>
-                                ) : (
-                                    <div className="text-left">
-                                        <div className="bg-white/5 p-4 rounded-xl mb-4 text-xs italic text-slate-300 border-l-2 border-yellow-500">
-                                            "Siap, Calon Siswa! Masukkan pertanyaanmu mengenai strategi seleksi."
-                                        </div>
-                                        <div className="relative mt-20">
-                                            <input className="w-full bg-black/50 border border-white/10 rounded-lg p-3 text-xs" placeholder="Tanya sesuatu..." />
-                                            <button className="absolute right-2 top-2 text-yellow-500"><i className="fas fa-paper-plane"></i></button>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    </section>
+        <div class="flex flex-col gap-4 max-w-sm mx-auto">
+            <a href="https://wa.me/6285185443185" class="bg-yellow-500 text-black py-4 rounded-2xl font-black text-sm shadow-xl shadow-yellow-500/30 flex items-center justify-center gap-3">
+                AMBIL KUOTA DISKON 50% <i class="fas fa-arrow-right"></i>
+            </a>
+        </div>
+    </header>
 
-                    {/* PILLARS */}
-                    <section className="p-6 py-16 grid grid-cols-2 gap-4">
-                        {[
-                            {t: 'AKADEMIK', i: 'fa-target-light'},
-                            {t: 'JASMANI', i: 'fa-bolt'},
-                            {t: 'PSIKOLOGI', i: 'fa-brain'},
-                            {t: 'MENTAL', i: 'fa-shield-halved'}
-                        ].map(p => (
-                            <div key={p.t} className="glass p-6 rounded-2xl text-center">
-                                <i className={`fas ${p.i} text-yellow-500 text-xl mb-3`}></i>
-                                <h3 className="text-[10px] font-bold tracking-widest">{p.t}</h3>
-                            </div>
-                        ))}
-                    </section>
+    <section class="bg-[#0f050b] py-16 px-6 border-y border-white/5 relative">
+        <div class="text-center mb-10">
+            <h2 class="text-2xl font-bold flex items-center justify-center gap-3 mb-2 uppercase italic tracking-tighter">
+                <i class="fas fa-brain text-yellow-500"></i> Imperium AI Tactical
+            </h2>
+            <p class="text-xs text-slate-500">Simulasi CAT & Konsultasi Strategis Terintegrasi</p>
+        </div>
 
-                    <footer className="p-8 text-center text-slate-600 border-t border-
+        <div class="glass rounded-[2rem] overflow-hidden max-w-xl mx-auto border-white/10 shadow-2xl">
+            <div class="flex border-b border-white/10 bg-white/5">
+                <div class="flex-1 py-4 text-center text-xs font-bold bg-yellow-500 text-black uppercase tracking-widest">
+                    <i class="fas fa-crosshairs mr-2"></i> Simulasi Soal
+                </div>
+                <div class="flex-1 py-4 text-center text-xs font-bold text-slate-400 uppercase tracking-widest">
+                    <i class="fas fa-comments mr-2"></i> Chat Mentor
+                </div>
+            </div>
+            
+            <div class="p-10 text-center min-h-[300px] flex flex-col justify-center">
+                <div class="bg-yellow-500/10 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 text-yellow-500 animate-pulse">
+                    <i class="fas fa-robot fa-3x"></i>
+                </div>
+                <h3 class="text-lg font-bold text-white mb-2">Sistem AI Siap Digunakan!</h3>
+                <p class="text-xs text-slate-500 leading-relaxed mb-8">
+                    Klik tombol di bawah untuk membangkitkan soal HOTS (Higher Order Thinking Skills) terbaru.
+                </p>
+                <button onclick="window.location.href='https://wa.me/6285185443185'" class="border-2 border-yellow-500 text-yellow-500 py-3 px-8 rounded-xl font-bold text-xs uppercase hover:bg-yellow-500 hover:text-black transition-all">
+                    Aktifkan Fitur AI
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-20 px-6 grid grid-cols-2 md:grid-cols-4 gap-4 max-w-5xl mx-auto">
+        <div class="glass p-6 rounded-3xl text-center border-white/5">
+            <i class="fas fa-bullseye text-yellow-500 text-2xl mb-4"></i>
+            <h4 class="text-[10px] font-black uppercase tracking-widest">Akademik</h4>
+        </div>
+        <div class="glass p-6 rounded-3xl text-center border-yellow-500/40">
+            <i class="fas fa-bolt text-yellow-500 text-2xl mb-4"></i>
+            <h4 class="text-[10px] font-black uppercase tracking-widest">Jasmani</h4>
+        </div>
+        <div class="glass p-6 rounded-3xl text-center border-white/5">
+            <i class="fas fa-user-check text-yellow-500 text-2xl mb-4"></i>
+            <h4 class="text-[10px] font-black uppercase tracking-widest">Psikologi</h4>
+        </div>
+        <div class="glass p-6 rounded-3xl text-center border-white/5">
+            <i class="fas fa-shield-halved text-yellow-500 text-2xl mb-4"></i>
+            <h4 class="text-[10px] font-black uppercase tracking-widest">Mental</h4>
+        </div>
+    </section>
+
+    <footer class="py-12 px-6 text-center border-t border-white/5 bg-[#0a0408]">
+        <div class="mb-6 flex justify-center gap-6">
+            <a href="https://instagram.com/imperium.smartclass" class="text-slate-500 hover:text-yellow-500"><i class="fab fa-instagram fa-xl"></i></a>
+            <a href="https://wa.me/6285185443185" class="text-slate-500 hover:text-yellow-500"><i class="fab fa-whatsapp fa-xl"></i></a>
+        </div>
+        <p class="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-500 mb-2">Imperium Smart Class</p>
+        <p class="text-[9px] text-slate-600 italic">Ruko Trade Center Blok J no 11, Sagulung, Batam.</p>
+        <p class="text-[8px] mt
