@@ -215,7 +215,7 @@
 
         // --- 3. CORE AI ENGINE ---
         async function askAI(prompt, isJson = false) {
-            if(API_KEY === "MASUKKAN_API_KEY_GEMINI_DISINI") { alert("Mohon masukkan API Key di baris 367 kode, Ndan!"); return null; }
+            if(API_KEY === "AIzaSyBQu9PW-1Lhwc50EloRrqFnhqBWrYxUEwE") { alert("Mohon masukkan API Key di baris 367 kode, Ndan!"); return null; }
             const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
             try {
                 const response = await fetch(url, {
@@ -278,7 +278,7 @@
             input.value = '';
             box.scrollTop = box.scrollHeight;
 
-            const res = await askAI(`Kamu adalah Mentor Imperium, panggil user 'Ndan' atau 'Calon Taruna'. Jawab singkat, tegas, dan taktis: ${userMsg}`);
+            const res = await askAI(`Kamu adalah Mentor Imperium, panggil user 'Ndan' atau 'Calon Abdi Negara'. Jawab singkat, tegas, dan taktis: ${userMsg}`);
             if(res) {
                 box.innerHTML += `<div class="bg-white/5 p-3 rounded-2xl rounded-bl-none max-w-[80%] border border-white/10"><p class="text-yellow-500 font-black mb-1 text-[8px] uppercase tracking-widest">Komandan AI:</p><p>${res}</p></div>`;
             }
