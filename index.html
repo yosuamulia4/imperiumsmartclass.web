@@ -1,7 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Shield, Users, Target, Zap, Phone, MapPin, CheckCircle, Clock, Star, ChevronRight, Menu, X, Instagram, Brain, MessageSquare, RefreshCw, Send, Loader, BookOpen, Award, Home } from 'lucide-react';
+// Import ikon satu per satu untuk memastikan tidak ada error "undefined"
+import { 
+  Shield, Users, Target, Zap, Phone, MapPin, 
+  CheckCircle, Clock, Star, ChevronRight, Menu, 
+  X, Instagram, Brain, RefreshCw, Send, Loader, 
+  BookOpen, Award, ShieldCheck 
+} from 'lucide-react';
 
-export default function App() {
+export default function ImperiumLandingPage() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0 });
@@ -21,12 +27,13 @@ export default function App() {
   // --- AI LOGIC ---
   const callGemini = async (prompt, isJson = false) => {
     setIsLoading(true);
+    // CATATAN: Pastikan API Key ini aktif atau ganti dengan milik Komandan jika limit habis
     const apiKey = "AIzaSyBQu9PW-1Lhwc50EloRrqFnhqBWrYxUEwE"; 
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
 
     const systemInstruction = isJson 
       ? "Anda adalah instruktur elite TNI/POLRI. Buat soal HOTS pilihan ganda (A-E). Output WAJIB JSON murni: { \"question\": \"\", \"options\": [\"\", \"\", \"\", \"\", \"\"], \"correctIndex\": 0, \"explanation\": \"\" }"
-      : "Anda adalah Komandan Mentor di Imperium Smart Class. Jawab dengan tegas, ringkas, memotivasi, dan taktis. Panggil user 'Calon Taruna' atau 'Siswa'. Fokus pada kelulusan.";
+      : "Anda adalah Komandan Mentor di Imperium Smart Class. Jawab dengan tegas, ringkas, memotivasi, dan taktis. Panggil user 'Calon Taruna' atau 'Siswa'.";
 
     try {
       const response = await fetch(url, {
@@ -44,7 +51,7 @@ export default function App() {
       const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
       return isJson ? JSON.parse(text) : text;
     } catch (error) {
-      console.error("Error:", error);
+      console.error("AI Error:", error);
       setIsLoading(false);
       return null;
     }
@@ -66,7 +73,12 @@ export default function App() {
     if (response) setChatHistory(prev => [...prev, { role: 'model', text: response }]);
   };
 
-  // --- EFFECTS ---
+  // --- AUTO SCROLL CHAT ---
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [chatHistory]);
+
+  // --- TIMER & SCROLL EFFECT ---
   useEffect(() => {
     const target = new Date('2026-03-01T00:00:00');
     const timer = setInterval(() => {
@@ -79,141 +91,117 @@ export default function App() {
         });
       }
     }, 1000);
-    return () => clearInterval(timer);
-  }, []);
-
-  useEffect(() => {
     const scroll = () => setIsScrolled(window.scrollY > 50);
     window.addEventListener('scroll', scroll);
-    return () => window.removeEventListener('scroll', scroll);
+    return () => {
+      clearInterval(timer);
+      window.removeEventListener('scroll', scroll);
+    };
   }, []);
 
-  const scrollToSection = (id) => {
-    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
-    setIsMobileMenuOpen(false);
-  };
-
   return (
-    <div className="font-sans text-slate-200 bg-[#0f050b] min-h-screen selection:bg-yellow-500 selection:text-black">
+    <div className="bg-[#0f050b] text-slate-200 min-h-screen font-sans selection:bg-yellow-500 selection:text-black">
       
-      {/* 1. NAVIGATION & TOP BAR */}
-      <div className="bg-[#2D0A1E] text-[10px] md:text-xs py-2 border-b border-white/5 uppercase font-bold tracking-widest">
+      {/* NAVBAR */}
+      <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${isScrolled ? 'bg-[#1a0b14]/95 backdrop-blur-md py-4 shadow-2xl' : 'bg-transparent py-6'}`}>
         <div className="container mx-auto px-6 flex justify-between items-center">
-          <div className="flex gap-4"><span className="flex items-center gap-1 text-yellow-500"><Phone size={12}/> 0851 8544 3185</span></div>
-          <div className="hidden md:block">Lokasi: Ruko Trade Center Blok J No 11, Sagulung, Batam</div>
-        </div>
-      </div>
-
-      <nav className={`sticky top-0 z-50 transition-all duration-300 ${isScrolled ? 'bg-[#1a0b14]/95 backdrop-blur-md py-3 shadow-2xl' : 'bg-transparent py-6'}`}>
-        <div className="container mx-auto px-6 flex justify-between items-center">
-          <div className="flex items-center gap-3 cursor-pointer" onClick={() => window.scrollTo({top:0, behavior:'smooth'})}>
-            <div className="w-10 h-10 bg-yellow-500 rounded-lg flex items-center justify-center shadow-lg shadow-yellow-500/20"><Shield className="text-[#1a0b14]" size={24}/></div>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-yellow-500 rounded-lg flex items-center justify-center shadow-lg"><Shield className="text-black" size={24}/></div>
             <div>
-              <h1 className="text-xl font-black text-white leading-none uppercase tracking-tighter">Imperium</h1>
-              <p className="text-[9px] text-yellow-500 font-bold tracking-[0.3em]">SMART CLASS</p>
+              <h1 className="text-xl font-black text-white leading-none uppercase">Imperium</h1>
+              <p className="text-[8px] text-yellow-500 font-bold tracking-[0.3em]">SMART CLASS</p>
             </div>
           </div>
-          <div className="hidden md:flex items-center gap-8 text-[11px] font-black uppercase tracking-widest">
-            {['AI Center', 'Program', 'Keunggulan', 'Lokasi'].map(i => (
-              <button key={i} onClick={() => scrollToSection(i.toLowerCase().replace(' ', '-'))} className="hover:text-yellow-500 transition-colors">{i}</button>
-            ))}
-            <a href="https://wa.me/6285185443185" className="bg-yellow-500 text-black px-6 py-2.5 rounded-full hover:scale-105 transition-transform shadow-lg shadow-yellow-500/20">Daftar Batch 1</a>
+          <div className="hidden md:flex items-center gap-8 text-[10px] font-black uppercase tracking-widest">
+            <button onClick={() => document.getElementById('ai-center').scrollIntoView()} className="hover:text-yellow-500 transition-colors">AI Center</button>
+            <button onClick={() => document.getElementById('keunggulan').scrollIntoView()} className="hover:text-yellow-500 transition-colors">Keunggulan</button>
+            <a href="https://wa.me/6285185443185" className="bg-yellow-500 text-black px-6 py-2 rounded-full hover:scale-105 transition-transform">Daftar Sekarang</a>
           </div>
-          <button className="md:hidden text-yellow-500" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>{isMobileMenuOpen ? <X/> : <Menu/>}</button>
         </div>
       </nav>
 
-      {/* 2. HERO SECTION */}
-      <section className="relative pt-10 pb-20 overflow-hidden">
-        <div className="container mx-auto px-6 grid lg:grid-cols-2 gap-12 items-center">
-          <div className="relative z-10">
-            <div className="inline-block px-4 py-1 bg-yellow-500/10 border border-yellow-500/30 rounded-full text-yellow-500 text-[10px] font-bold uppercase tracking-[0.2em] mb-6 animate-pulse">Tactical Training Center</div>
-            <h2 className="text-5xl lg:text-7xl font-black text-white leading-[0.9] uppercase mb-6">Bentuk <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-yellow-600">Mental</span> Juara Anda.</h2>
-            <p className="text-slate-400 text-lg mb-10 border-l-4 border-yellow-500 pl-6 italic">Spesialis persiapan masuk TNI, POLRI, & Sekolah Kedinasan dengan kurikulum taktis berstandar institusi.</p>
-            
+      {/* HERO SECTION */}
+      <section className="pt-32 pb-20 px-6">
+        <div className="container mx-auto grid lg:grid-cols-2 gap-12 items-center">
+          <div>
+            <span className="text-yellow-500 text-xs font-bold tracking-[0.4em] uppercase mb-4 block">Official Training Center Batam</span>
+            <h2 className="text-5xl lg:text-7xl font-black text-white leading-tight uppercase mb-6 italic">Siapkan <span className="text-yellow-500">Masa Depan</span> Abdi Negara.</h2>
+            <p className="text-slate-400 text-lg mb-10 max-w-lg border-l-2 border-yellow-500 pl-4 italic">Bimbingan belajar khusus TNI, POLRI, dan Kedinasan di Sagulung Batu Aji. Terukur, Disiplin, dan Berorientasi Hasil.</p>
             <div className="flex flex-wrap gap-4">
-              <a href="https://wa.me/6285185443185" className="bg-yellow-500 text-black px-8 py-4 rounded-xl font-black uppercase text-sm flex items-center gap-2 hover:bg-yellow-400 transition-all shadow-xl shadow-yellow-500/10">Gabung Elite Squad <ChevronRight size={18}/></a>
-              <div className="flex items-center gap-4 px-6 py-4 bg-white/5 rounded-xl border border-white/10">
-                <div className="text-center">
-                  <span className="block text-2xl font-black text-white leading-none">{timeLeft.days}</span>
-                  <span className="text-[8px] uppercase text-slate-500">Hari</span>
-                </div>
-                <div className="w-px h-8 bg-white/10"></div>
-                <div className="text-yellow-500 text-[10px] font-bold uppercase leading-tight">Promo Batch 1<br/>Sisa 8 Kursi</div>
+              <a href="https://wa.me/6285185443185" className="bg-yellow-500 text-black px-8 py-4 rounded-xl font-black uppercase text-sm shadow-xl hover:bg-yellow-400 transition-all">Hubungi Admin</a>
+              <div className="bg-white/5 border border-white/10 px-6 py-4 rounded-xl flex items-center gap-4">
+                <div className="text-center"><span className="block text-xl font-bold text-white">{timeLeft.days}</span><span className="text-[8px] uppercase text-slate-500">Hari</span></div>
+                <div className="w-px h-6 bg-white/10"></div>
+                <p className="text-[10px] font-bold text-yellow-500 uppercase leading-none">Sisa 8 Kursi<br/>Batch 1</p>
               </div>
             </div>
           </div>
-          <div className="relative">
-            <div className="absolute inset-0 bg-yellow-500/20 blur-[120px] rounded-full"></div>
-            <img src="https://images.unsplash.com/photo-1595152452543-e5cca283b514?auto=format&fit=crop&w=800&q=80" alt="Training" className="relative rounded-3xl border border-white/10 shadow-2xl grayscale hover:grayscale-0 transition-all duration-700" />
+          <div className="relative rounded-3xl overflow-hidden border border-white/10 shadow-2xl">
+            <div className="absolute inset-0 bg-yellow-500/10 mix-blend-overlay"></div>
+            <img src="https://images.unsplash.com/photo-1579389083078-4e7018379f7e?auto=format&fit=crop&w=800&q=80" alt="Training" className="w-full h-full object-cover grayscale" />
           </div>
         </div>
       </section>
 
-      {/* 3. AI TACTICAL CENTER */}
-      <section id="ai-center" className="py-20 bg-[#15050e] border-y border-white/5">
+      {/* AI CENTER */}
+      <section id="ai-center" className="py-20 bg-[#15050e]">
         <div className="container mx-auto px-6">
           <div className="text-center mb-12">
-            <h3 className="text-3xl font-black text-white uppercase italic tracking-tighter flex items-center justify-center gap-3"><Brain className="text-yellow-500"/> Imperium Tactical AI</h3>
-            <p className="text-slate-500 text-sm mt-2">Simulasi CAT (Computer Assisted Test) & Konsultasi Mentor Real-Time</p>
+            <h3 className="text-3xl font-black text-white uppercase italic tracking-tighter flex items-center justify-center gap-3"><Brain className="text-yellow-500"/> AI Tactical Center</h3>
           </div>
-          
-          <div className="max-w-4xl mx-auto bg-[#1a0b14] border border-white/10 rounded-[2rem] overflow-hidden shadow-2xl">
-            <div className="flex border-b border-white/5">
-              <button onClick={() => setAiMode('drill')} className={`flex-1 py-4 font-black text-xs uppercase tracking-widest transition-all ${aiMode==='drill' ? 'bg-yellow-500 text-black' : 'text-slate-500 hover:text-white'}`}>Drilling Soal</button>
-              <button onClick={() => setAiMode('consult')} className={`flex-1 py-4 font-black text-xs uppercase tracking-widest transition-all ${aiMode==='consult' ? 'bg-yellow-500 text-black' : 'text-slate-500 hover:text-white'}`}>Tanya Komandan</button>
+          <div className="max-w-4xl mx-auto bg-[#1a0b14] border border-white/10 rounded-3xl overflow-hidden">
+            <div className="flex bg-black/30">
+              <button onClick={() => setAiMode('drill')} className={`flex-1 py-4 text-[10px] font-black uppercase tracking-widest ${aiMode==='drill' ? 'bg-yellow-500 text-black' : 'text-slate-500'}`}>Drilling Soal</button>
+              <button onClick={() => setAiMode('consult')} className={`flex-1 py-4 text-[10px] font-black uppercase tracking-widest ${aiMode==='consult' ? 'bg-yellow-500 text-black' : 'text-slate-500'}`}>Tanya Mentor</button>
             </div>
-
-            <div className="p-6 md:p-10 min-h-[450px] flex flex-col">
+            <div className="p-8 min-h-[400px]">
               {aiMode === 'drill' ? (
-                <div className="flex-1 flex flex-col animate-in fade-in slide-in-from-bottom-2">
-                  {!drillData ? (
-                    <div className="flex-1 flex flex-col items-center justify-center text-center">
-                      <div className="flex gap-4 mb-8">
-                        {['TWK', 'TIU', 'TKP'].map(c => (
-                          <button key={c} onClick={() => setDrillCategory(c)} className={`w-20 py-3 rounded-xl border-2 font-black transition-all ${drillCategory===c ? 'border-yellow-500 text-yellow-500 bg-yellow-500/10' : 'border-white/5 text-slate-600'}`}>{c}</button>
-                        ))}
-                      </div>
-                      <button onClick={handleGenerateDrill} disabled={isLoading} className="bg-white text-black px-10 py-4 rounded-2xl font-black uppercase text-sm flex items-center gap-3 hover:bg-yellow-500 transition-all">
-                        {isLoading ? <Loader className="animate-spin"/> : <RefreshCw size={18}/>} Generate Soal HOTS
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="flex-1">
-                      <div className="flex justify-between text-[10px] font-black text-yellow-500 uppercase tracking-[0.3em] mb-6"><span>Sektor: {drillCategory}</span><button onClick={handleGenerateDrill} className="flex items-center gap-1 hover:text-white"><RefreshCw size={12}/> Reset</button></div>
-                      <h4 className="text-xl text-white font-medium mb-8 leading-relaxed italic">"{drillData.question}"</h4>
-                      <div className="grid gap-3 mb-8">
-                        {drillData.options.map((opt, i) => (
-                          <button key={i} onClick={() => setUserAnswer(i)} disabled={userAnswer!==null} className={`text-left p-4 rounded-xl border text-sm transition-all ${userAnswer===null ? 'border-white/10 hover:bg-white/5' : i===drillData.correctIndex ? 'border-green-500 bg-green-500/10 text-green-400' : userAnswer===i ? 'border-red-500 bg-red-500/10 text-red-400' : 'opacity-30 border-white/5'}`}>
-                            <span className="font-black mr-4 text-yellow-500">{String.fromCharCode(65+i)}</span> {opt}
-                          </button>
-                        ))}
-                      </div>
-                      {userAnswer !== null && (
-                        <div className="bg-yellow-500/5 border-l-4 border-yellow-500 p-6 rounded-r-xl animate-in zoom-in-95">
-                          <p className="text-xs font-black text-yellow-500 uppercase mb-2">Analisis Strategis:</p>
-                          <p className="text-sm text-slate-300 italic">{drillData.explanation}</p>
+                <div>
+                   {!drillData ? (
+                     <div className="text-center py-20">
+                       <div className="flex justify-center gap-2 mb-8">
+                         {['TWK', 'TIU', 'TKP'].map(c => (
+                           <button key={c} onClick={() => setDrillCategory(c)} className={`px-6 py-2 rounded-lg border-2 font-black text-xs ${drillCategory===c ? 'border-yellow-500 text-yellow-500' : 'border-white/5'}`}>{c}</button>
+                         ))}
+                       </div>
+                       <button onClick={handleGenerateDrill} disabled={isLoading} className="bg-white text-black px-8 py-3 rounded-lg font-black uppercase text-xs flex items-center gap-2 mx-auto">
+                         {isLoading ? <Loader className="animate-spin" size={16}/> : <RefreshCw size={16}/>} Generate Soal HOTS
+                       </button>
+                     </div>
+                   ) : (
+                     <div className="animate-in fade-in duration-500">
+                        <h4 className="text-lg text-white font-medium mb-6 italic">"{drillData.question}"</h4>
+                        <div className="grid gap-3">
+                          {drillData.options.map((opt, i) => (
+                            <button key={i} onClick={() => setUserAnswer(i)} className={`text-left p-4 rounded-xl border text-sm transition-all ${userAnswer===null ? 'border-white/10' : i===drillData.correctIndex ? 'border-green-500 bg-green-500/10' : 'border-red-500 opacity-50'}`}>
+                              <span className="text-yellow-500 font-bold mr-3">{String.fromCharCode(65+i)}.</span> {opt}
+                            </button>
+                          ))}
                         </div>
-                      )}
-                    </div>
-                  )}
+                        {userAnswer !== null && (
+                          <div className="mt-6 p-4 bg-white/5 border-l-4 border-yellow-500 rounded-r-xl">
+                            <p className="text-xs text-slate-400 italic">{drillData.explanation}</p>
+                            <button onClick={handleGenerateDrill} className="mt-4 text-yellow-500 text-[10px] font-black uppercase">Soal Berikutnya →</button>
+                          </div>
+                        )}
+                     </div>
+                   )}
                 </div>
               ) : (
-                <div className="flex-1 flex flex-col h-[450px]">
-                  <div className="flex-1 overflow-y-auto space-y-4 mb-6 pr-2 scrollbar-hide">
-                    {chatHistory.map((m, i) => (
-                      <div key={i} className={`flex ${m.role==='user' ? 'justify-end' : 'justify-start'}`}>
-                        <div className={`max-w-[85%] p-4 rounded-2xl text-sm ${m.role==='user' ? 'bg-yellow-500 text-black font-bold rounded-br-none' : 'bg-white/5 border border-white/10 text-slate-300 rounded-bl-none italic'}`}>
-                          {m.role==='model' && <p className="text-[9px] font-black text-yellow-500 uppercase mb-1">Mentor Imperium</p>}
-                          {m.text}
+                <div className="flex flex-col h-[400px]">
+                  <div className="flex-1 overflow-y-auto space-y-4 mb-4 pr-2">
+                    {chatHistory.map((msg, i) => (
+                      <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                        <div className={`max-w-[80%] p-4 rounded-2xl text-sm ${msg.role === 'user' ? 'bg-yellow-500 text-black font-bold' : 'bg-white/5 border border-white/10 text-slate-300 italic'}`}>
+                          {msg.text}
                         </div>
                       </div>
                     ))}
-                    <div ref={chatEndRef}/>
+                    <div ref={chatEndRef} />
                   </div>
                   <div className="relative">
-                    <input type="text" value={chatInput} onChange={e => setChatInput(e.target.value)} onKeyDown={e => e.key==='Enter' && handleChatSend()} placeholder="Tanya strategi belajar..." className="w-full bg-black/50 border border-white/10 rounded-xl py-4 pl-6 pr-14 text-sm focus:border-yellow-500 outline-none transition-all"/>
-                    <button onClick={handleChatSend} className="absolute right-2 top-2 p-2.5 bg-yellow-500 rounded-lg text-black hover:bg-yellow-400 transition-all"><Send size={20}/></button>
+                    <input value={chatInput} onChange={e => setChatInput(e.target.value)} onKeyDown={e => e.key==='Enter' && handleChatSend()} placeholder="Ketik pesan..." className="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-sm outline-none focus:border-yellow-500"/>
+                    <button onClick={handleChatSend} className="absolute right-2 top-2 p-2 bg-yellow-500 rounded-lg text-black"><Send size={18}/></button>
                   </div>
                 </div>
               )}
@@ -222,84 +210,78 @@ export default function App() {
         </div>
       </section>
 
-      {/* 4. KEUNGGULAN & FASILITAS */}
+      {/* KEUNGGULAN & FASILITAS */}
       <section id="keunggulan" className="py-24 bg-[#0f050b]">
         <div className="container mx-auto px-6 grid lg:grid-cols-2 gap-20">
           <div>
-            <h3 className="text-yellow-500 font-black text-xs uppercase tracking-[0.4em] mb-4">Core Advantage</h3>
-            <h2 className="text-4xl font-black text-white uppercase mb-10 leading-none">Mengapa <span className="text-yellow-500 italic">Imperium?</span></h2>
-            <div className="space-y-8">
+            <h2 className="text-4xl font-black text-white uppercase italic mb-12">Kenapa <span className="text-yellow-500">Imperium</span> Berbeda?</h2>
+            <div className="grid gap-8">
               {[
-                { t: 'Metode Drilling CAT', d: 'Simulasi ujian dengan sistem Computer Assisted Test yang 99% mirip aslinya.', i: Target },
-                { t: 'Tutor Praktisi Expert', d: 'Dibimbing oleh tenaga ahli yang berpengalaman meluluskan ratusan taruna.', i: Award },
-                { t: 'Hybrid Learning System', d: 'Bebas pilih kelas tatap muka (Offline) atau via interaktif (Online).', i: RefreshCw },
-                { t: 'Fisik & Psikologi', d: 'Pembinaan jasmani terukur dan pemantapan mental psikotes intensif.', i: Zap },
-                { t: 'Monitoring Progres', d: 'Laporan perkembangan nilai siswa secara berkala kepada orang tua.', i: BookOpen },
-                { t: 'Networking Elite', d: 'Bergabung dalam komunitas eksklusif calon abdi negara seluruh Indonesia.', i: Users },
-              ].map((k, i) => (
-                <div key={i} className="flex gap-5 group">
-                  <div className="bg-yellow-500/10 p-3 rounded-xl group-hover:bg-yellow-500 transition-all duration-500"><k.i className="text-yellow-500 group-hover:text-black" size={24}/></div>
-                  <div>
-                    <h4 className="text-white font-black uppercase text-sm mb-1">{k.t}</h4>
-                    <p className="text-slate-500 text-xs leading-relaxed">{k.d}</p>
-                  </div>
+                { t: 'Metode Drilling HOTS', d: 'Latihan soal tingkat tinggi yang disesuaikan dengan standar CAT terbaru.', i: Target },
+                { t: 'Tutor Praktisi Polri', d: 'Dibimbing langsung oleh praktisi yang menguasai medan seleksi.', i: Award },
+                { t: 'Program Jasmani Terukur', d: 'Latihan fisik (Lari, Pull-up, Renang) dengan evaluasi mingguan.', i: Zap },
+                { t: 'Fasilitas Kelas Elite', d: 'Belajar nyaman di ruangan Full AC dengan fasilitas pendukung lengkap.', i: ShieldCheck }
+              ].map((item, i) => (
+                <div key={i} className="flex gap-6 group">
+                   <div className="bg-yellow-500/10 p-4 rounded-2xl group-hover:bg-yellow-500 transition-all">
+                     <item.i className="text-yellow-500 group-hover:text-black" size={28}/>
+                   </div>
+                   <div>
+                     <h4 className="text-white font-black uppercase text-sm mb-2">{item.t}</h4>
+                     <p className="text-slate-500 text-xs leading-relaxed">{item.d}</p>
+                   </div>
                 </div>
               ))}
             </div>
           </div>
           
-          <div className="lg:sticky lg:top-32 h-fit">
-            <div className="bg-gradient-to-br from-[#2D0A1E] to-[#1a0b14] p-10 rounded-[2.5rem] border border-white/10 shadow-3xl">
-              <h3 className="text-white font-black text-xl uppercase italic mb-8 flex items-center gap-3"><Star className="text-yellow-500 fill-current"/> Fasilitas Elite</h3>
-              <div className="grid gap-3 mb-10">
-                {[
-                  'Ruang Kelas Full AC & WiFi', 'Modul Strategis Imperium', 'Aplikasi Simulasi CAT', 'Asrama Eksklusif (Opsional)', 'Kaos Tactical & Atribut', 'Grup Premium Selamanya', 'Sertifikat Pelatihan'
-                ].map((f, i) => (
-                  <div key={i} className="bg-white/5 p-4 rounded-xl flex justify-between items-center border border-transparent hover:border-yellow-500/20 transition-all">
-                    <span className="text-xs font-bold uppercase text-slate-300">{f}</span>
-                    <CheckCircle size={14} className="text-yellow-500"/>
-                  </div>
-                ))}
-              </div>
-              <div className="bg-black/40 p-6 rounded-2xl mb-8 border border-white/5">
-                <div className="flex justify-between items-center mb-2"><span className="text-[10px] uppercase text-slate-500 font-bold tracking-widest">Investasi Masa Depan</span><span className="bg-red-600 text-[8px] px-2 py-0.5 rounded-full font-bold">TERBATAS</span></div>
-                <div className="flex justify-between items-end"><div className="text-3xl font-black text-white italic">DISKON 50%</div><div className="text-right text-yellow-500 text-xs font-bold uppercase">Batch 1 Only</div></div>
-              </div>
-              <a href="https://wa.me/6285185443185" className="w-full bg-yellow-500 text-black py-5 rounded-2xl font-black uppercase text-center block hover:bg-yellow-400 shadow-xl shadow-yellow-500/20 transition-all">Amankan Kursi Sekarang</a>
-            </div>
+          <div className="bg-gradient-to-br from-[#2D0A1E] to-[#1a0b14] p-10 rounded-[2.5rem] border border-white/10 shadow-3xl h-fit lg:sticky lg:top-32">
+            <h3 className="text-white font-black text-xl uppercase italic mb-8 flex items-center gap-3"><Star className="text-yellow-500 fill-current" size={20}/> Fasilitas & Bonus</h3>
+            <ul className="space-y-4 mb-10">
+              {[
+                'Modul Pembelajaran Fisik (Hardcopy)',
+                'Aplikasi Simulasi CAT Imperium',
+                'Kaos Tactical Exclusive',
+                'Grup Konsultasi Premium',
+                'Sertifikat Pelatihan'
+              ].map((f, i) => (
+                <li key={i} className="flex items-center justify-between bg-white/5 p-4 rounded-xl border border-transparent hover:border-yellow-500/30 transition-all">
+                  <span className="text-[11px] font-bold text-slate-300 uppercase tracking-wide">{f}</span>
+                  <CheckCircle size={16} className="text-yellow-500"/>
+                </li>
+              ))}
+            </ul>
+            <a href="https://wa.me/6285185443185" className="w-full bg-yellow-500 text-black py-5 rounded-2xl font-black uppercase text-center block text-sm shadow-xl shadow-yellow-500/20 hover:scale-[1.02] transition-all">Amankan Kursi Batch 1</a>
           </div>
         </div>
       </section>
 
-      {/* 5. FOOTER & LOKASI */}
-      <footer id="lokasi" className="bg-black py-20 border-t border-white/5">
+      {/* FOOTER */}
+      <footer className="bg-black py-20 border-t border-white/5">
         <div className="container mx-auto px-6 grid md:grid-cols-3 gap-16">
-          <div className="space-y-6">
-            <div className="flex items-center gap-3"><Shield className="text-yellow-500" size={32}/><span className="text-2xl font-black text-white uppercase italic">Imperium</span></div>
-            <p className="text-slate-500 text-sm italic leading-relaxed">"Bukan sekadar meluluskan, tapi membentuk karakter tangguh untuk masa depan institusi negara."</p>
-            <div className="flex gap-4">
-              <a href="https://instagram.com/imperium.smartclass" className="w-10 h-10 bg-white/5 rounded-full flex items-center justify-center hover:bg-yellow-500 hover:text-black transition-all"><Instagram size={20}/></a>
+          <div>
+            <div className="flex items-center gap-2 mb-6 text-white font-black italic text-2xl uppercase">
+              <Shield className="text-yellow-500"/> Imperium
+            </div>
+            <p className="text-slate-500 text-xs italic leading-relaxed uppercase tracking-tighter">Bukan hanya tentang lulus, tapi tentang membentuk integritas dan mentalitas baja.</p>
+          </div>
+          <div className="space-y-4">
+            <h4 className="text-white font-black text-xs uppercase tracking-[0.3em] mb-6">Lokasi Markas</h4>
+            <div className="flex gap-3 text-xs text-slate-400 italic">
+              <MapPin className="text-yellow-500 shrink-0" size={16}/>
+              <span>Ruko Trade Center Blok J No 11, Sagulung, Batam.</span>
             </div>
           </div>
-          <div className="space-y-6">
-            <h4 className="text-white font-black text-xs uppercase tracking-[0.3em]">Markas Komando</h4>
-            <div className="space-y-4 text-xs text-slate-400">
-              <div className="flex gap-3"><MapPin className="text-yellow-500 shrink-0" size={16}/><span>Ruko Trade Center Blok J No 11, Sagulung, Batam.</span></div>
-              <div className="flex gap-3"><Clock className="text-yellow-500 shrink-0" size={16}/><span>Senin - Sabtu: 08.00 - 20.00 WIB</span></div>
-            </div>
-          </div>
-          <div className="space-y-6">
-            <h4 className="text-white font-black text-xs uppercase tracking-[0.3em]">Kontak Admin</h4>
-            <div className="grid gap-2">
-              <a href="https://wa.me/6285185443185" className="bg-white/5 p-4 rounded-xl flex justify-between items-center hover:border-yellow-500 border border-transparent transition-all">
-                <div><p className="text-[8px] text-slate-500 uppercase font-bold">Admin 1 (Batam)</p><p className="text-white font-black italic">0851 8544 3185</p></div>
-                <ChevronRight size={16} className="text-yellow-500"/>
-              </a>
+          <div className="space-y-4 text-right">
+            <h4 className="text-white font-black text-xs uppercase tracking-[0.3em] mb-6">Hubungi Kami</h4>
+            <a href="https://wa.me/6285185443185" className="text-xl font-black text-yellow-500 block">0851 8544 3185</a>
+            <div className="flex justify-end gap-4 mt-6">
+               <Instagram className="text-slate-500 hover:text-yellow-500 cursor-pointer" size={20}/>
             </div>
           </div>
         </div>
-        <div className="container mx-auto px-6 mt-20 pt-8 border-t border-white/5 text-center">
-          <p className="text-[10px] text-slate-600 font-black uppercase tracking-[0.5em]">&copy; 2026 Imperium Smart Class. Menuju Garis Finish.</p>
+        <div className="text-center mt-20 border-t border-white/5 pt-10">
+          <p className="text-[10px] text-slate-700 font-bold uppercase tracking-[0.5em]">&copy; 2026 Imperium Smart Class. Berani Maju, Pasti Lulus.</p>
         </div>
       </footer>
     </div>
