@@ -5,80 +5,124 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IMPERIUM SMART CLASS | Menuju Garis Finish</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        body { background-color: #1a0b14; font-family: sans-serif; }
-        .gold-gradient { background: linear-gradient(to right, #fbbf24, #d97706); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .card-bg { background-color: #2D0A1E; border: 1px solid rgba(251, 191, 36, 0.2); }
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #1a0b14; }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .gold-gradient { background: linear-gradient(to r, #fbbf24, #d97706); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
     </style>
 </head>
-<body class="text-white">
+<body>
+    <div id="root"></div>
 
-    <nav class="p-6 flex justify-between items-center border-b border-white/10">
-        <div class="flex items-center gap-3">
-            <div class="bg-yellow-500 p-2 rounded-lg text-[#1a0b14]">
-                <i class="fas fa-shield-alt fa-lg"></i>
-            </div>
-            <div>
-                <h1 class="font-bold text-xl tracking-wide">IMPERIUM</h1>
-                <p class="text-[10px] text-yellow-500 font-bold tracking-[0.2em]">SMART CLASS</p>
-            </div>
-        </div>
-        <a href="https://wa.me/6285185443185" class="bg-yellow-500 text-[#1a0b14] px-5 py-2 rounded-full font-bold text-sm hover:scale-105 transition">DAFTAR BATCH 1</a>
-    </nav>
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+        const { 
+            Shield, Users, Target, Zap, Phone, MapPin, CheckCircle, 
+            Clock, Star, ChevronRight, Menu, X, Instagram, Brain, 
+            MessageSquare, RefreshCw, Send, Loader 
+        } = lucide;
 
-    <header class="container mx-auto px-6 py-20 text-center">
-        <span class="text-yellow-500 text-xs font-bold tracking-widest uppercase border border-yellow-500/30 px-3 py-1 rounded-full">Pusat Pelatihan Strategis</span>
-        <h1 class="text-5xl md:text-6xl font-extrabold mt-6 leading-tight">
-            Menuju Garis <span class="gold-gradient">Finish</span> Dengan Kemenangan.
-        </h1>
-        <p class="text-slate-400 mt-6 max-w-2xl mx-auto text-lg">
-            Spesialis persiapan masuk TNI, POLRI, & Kedinasan. Unggul dalam Karakter, Akademik, dan Fisik melalui sistem pelatihan taktis berstandar institusi.
-        </p>
-        
-        <div class="mt-10 flex flex-col md:flex-row justify-center gap-4">
-            <a href="https://wa.me/6285185443185" class="bg-yellow-500 text-[#1a0b14] px-8 py-4 rounded-xl font-bold text-lg shadow-lg shadow-yellow-500/20">Ambil Kuota Diskon (50%)</a>
-            <button class="border border-white/20 px-8 py-4 rounded-xl font-bold hover:bg-white/5">Lihat Kurikulum</button>
-        </div>
-    </header>
+        function App() {
+            const [isScrolled, setIsScrolled] = useState(false);
+            const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+            const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0 });
 
-    <section class="container mx-auto px-6 py-16">
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div class="card-bg p-6 rounded-2xl text-center">
-                <i class="fas fa-bullseye text-yellow-500 text-2xl mb-4"></i>
-                <h3 class="font-bold text-sm">AKADEMIK</h3>
-            </div>
-            <div class="card-bg p-6 rounded-2xl text-center">
-                <i class="fas fa-bolt text-yellow-500 text-2xl mb-4"></i>
-                <h3 class="font-bold text-sm">JASMANI</h3>
-            </div>
-            <div class="card-bg p-6 rounded-2xl text-center">
-                <i class="fas fa-users text-yellow-500 text-2xl mb-4"></i>
-                <h3 class="font-bold text-sm">PSIKOLOGI</h3>
-            </div>
-            <div class="card-bg p-6 rounded-2xl text-center">
-                <i class="fas fa-shield-alt text-yellow-500 text-2xl mb-4"></i>
-                <h3 class="font-bold text-sm">MENTAL</h3>
-            </div>
-        </div>
-    </section>
+            // --- AI STATE ---
+            const [aiMode, setAiMode] = useState('drill'); 
+            const [drillCategory, setDrillCategory] = useState('TWK');
+            const [drillData, setDrillData] = useState(null);
+            const [userAnswer, setUserAnswer] = useState(null);
+            const [chatHistory, setChatHistory] = useState([
+                { role: 'model', text: 'Siap! Saya Komandan AI Imperium. Ada yang bisa saya bantu untuk strategi persiapanmu?' }
+            ]);
+            const [chatInput, setChatInput] = useState('');
+            const [isLoading, setIsLoading] = useState(false);
+            const chatEndRef = useRef(null);
 
-    <section class="container mx-auto px-6 py-10">
-        <div class="bg-gradient-to-br from-[#2D0A1E] to-[#1a0b14] p-8 rounded-3xl border border-yellow-500/50 relative overflow-hidden text-center">
-            <h2 class="text-2xl font-bold mb-4 flex items-center justify-center gap-2">
-                <i class="fas fa-brain text-yellow-500"></i> Imperium Tactical AI ✨
-            </h2>
-            <p class="text-slate-400 mb-6">Sistem simulasi soal CAT dan konsultasi mentor 24/7 (Segera Hadir di Versi Web).</p>
-            <div class="bg-black/40 p-4 rounded-xl inline-block border border-white/10">
-                <p class="text-yellow-500 font-mono">STATUS: MENGHUBUNGKAN KE SERVER...</p>
-            </div>
-        </div>
-    </section>
+            // --- AI LOGIC ---
+            const callGemini = async (prompt, isJson = false) => {
+                setIsLoading(true);
+                // Komandan bisa ganti API Key di sini atau via Netlify Env
+                const apiKey = ""; 
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
 
-    <footer class="text-center py-12 text-slate-500 text-sm border-t border-white/5">
-        <p>&copy; 2026 Imperium Smart Class. Menuju Garis Finish.</p>
-        <p class="mt-2">Ruko Trade Center Blok J no 11, Sagulung, Batam.</p>
-    </footer>
+                const systemInstruction = isJson 
+                    ? "Anda adalah instruktur elite untuk persiapan tes TNI/POLRI/Kedinasan. Buatkan 1 soal latihan HOTS. Output MURNI JSON: {question, options:[], correctIndex, explanation}"
+                    : "Anda adalah Komandan Mentor di Imperium Smart Class. Jawab dengan tegas, ringkas, memotivasi, dan taktis. Panggil user dengan sebutan 'Calon Taruna' atau 'Siswa'.";
 
-</body>
-</html>
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            contents: [{ parts: [{ text: prompt }] }],
+                            systemInstruction: { parts: [{ text: systemInstruction }] }
+                        })
+                    });
+                    const data = await response.json();
+                    setIsLoading(false);
+                    const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+                    if (!text) return null;
+                    return isJson ? JSON.parse(text.replace(/```json|```/g, "")) : text;
+                } catch (error) {
+                    setIsLoading(false);
+                    return null;
+                }
+            };
+
+            const handleGenerateDrill = async () => {
+                setDrillData(null);
+                setUserAnswer(null);
+                const data = await callGemini(`Buatkan 1 soal pilihan ganda ${drillCategory} dengan 5 opsi.`, true);
+                if (data) setDrillData(data);
+            };
+
+            const handleChatSend = async () => {
+                if (!chatInput.trim()) return;
+                const userMsg = chatInput;
+                setChatHistory(prev => [...prev, { role: 'user', text: userMsg }]);
+                setChatInput('');
+                const response = await callGemini(userMsg, false);
+                if (response) setChatHistory(prev => [...prev, { role: 'model', text: response }]);
+            };
+
+            useEffect(() => {
+                const targetDate = new Date('2026-03-01T00:00:00');
+                const interval = setInterval(() => {
+                    const diff = targetDate - new Date();
+                    if (diff > 0) {
+                        setTimeLeft({
+                            days: Math.floor(diff / 86400000),
+                            hours: Math.floor((diff / 3600000) % 24),
+                            minutes: Math.floor((diff / 60000) % 60),
+                        });
+                    }
+                }, 1000);
+                return () => clearInterval(interval);
+            }, []);
+
+            useEffect(() => {
+                const handleScroll = () => setIsScrolled(window.scrollY > 50);
+                window.addEventListener('scroll', handleScroll);
+                return () => window.removeEventListener('scroll', handleScroll);
+            }, []);
+
+            const scrollToSection = (id) => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.scrollIntoView({ behavior: 'smooth' });
+                    setIsMobileMenuOpen(false);
+                }
+            };
+
+            return (
+                <div className="text-slate-200 bg-[#1a0b14] min-h-screen selection:bg-yellow-500 selection:text-slate-900">
+                    {/* Top Bar */}
+                    <div className="bg-[#2D0A1E] text-white py-2 text-xs border-b border-white/10">
+                        <div className="container mx-auto px-4 flex justify-between items-center">
+                            <div className="flex gap-4">
