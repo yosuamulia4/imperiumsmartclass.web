@@ -3,126 +3,107 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IMPERIUM SMART CLASS | Menuju Garis Finish</title>
+    <title>IMPERIUM SMART CLASS</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #1a0b14; }
-        .scrollbar-hide::-webkit-scrollbar { display: none; }
-        .gold-gradient { background: linear-gradient(to r, #fbbf24, #d97706); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        body { background-color: #1a0b14; color: white; font-family: sans-serif; }
+        .gold-glow { text-shadow: 0 0 10px rgba(251, 191, 36, 0.5); }
+        .glass { background: rgba(45, 10, 30, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(251, 191, 36, 0.2); }
     </style>
 </head>
 <body>
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect, useRef } = React;
-        const { 
-            Shield, Users, Target, Zap, Phone, MapPin, CheckCircle, 
-            Clock, Star, ChevronRight, Menu, X, Instagram, Brain, 
-            MessageSquare, RefreshCw, Send, Loader 
-        } = lucide;
-
         function App() {
-            const [isScrolled, setIsScrolled] = useState(false);
-            const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-            const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0 });
-
-            // --- AI STATE ---
-            const [aiMode, setAiMode] = useState('drill'); 
-            const [drillCategory, setDrillCategory] = useState('TWK');
-            const [drillData, setDrillData] = useState(null);
-            const [userAnswer, setUserAnswer] = useState(null);
-            const [chatHistory, setChatHistory] = useState([
-                { role: 'model', text: 'Siap! Saya Komandan AI Imperium. Ada yang bisa saya bantu untuk strategi persiapanmu?' }
-            ]);
-            const [chatInput, setChatInput] = useState('');
-            const [isLoading, setIsLoading] = useState(false);
-            const chatEndRef = useRef(null);
-
-            // --- AI LOGIC ---
-            const callGemini = async (prompt, isJson = false) => {
-                setIsLoading(true);
-                // Komandan bisa ganti API Key di sini atau via Netlify Env
-                const apiKey = ""; 
-                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
-
-                const systemInstruction = isJson 
-                    ? "Anda adalah instruktur elite untuk persiapan tes TNI/POLRI/Kedinasan. Buatkan 1 soal latihan HOTS. Output MURNI JSON: {question, options:[], correctIndex, explanation}"
-                    : "Anda adalah Komandan Mentor di Imperium Smart Class. Jawab dengan tegas, ringkas, memotivasi, dan taktis. Panggil user dengan sebutan 'Calon Taruna' atau 'Siswa'.";
-
-                try {
-                    const response = await fetch(url, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            contents: [{ parts: [{ text: prompt }] }],
-                            systemInstruction: { parts: [{ text: systemInstruction }] }
-                        })
-                    });
-                    const data = await response.json();
-                    setIsLoading(false);
-                    const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-                    if (!text) return null;
-                    return isJson ? JSON.parse(text.replace(/```json|```/g, "")) : text;
-                } catch (error) {
-                    setIsLoading(false);
-                    return null;
-                }
-            };
-
-            const handleGenerateDrill = async () => {
-                setDrillData(null);
-                setUserAnswer(null);
-                const data = await callGemini(`Buatkan 1 soal pilihan ganda ${drillCategory} dengan 5 opsi.`, true);
-                if (data) setDrillData(data);
-            };
-
-            const handleChatSend = async () => {
-                if (!chatInput.trim()) return;
-                const userMsg = chatInput;
-                setChatHistory(prev => [...prev, { role: 'user', text: userMsg }]);
-                setChatInput('');
-                const response = await callGemini(userMsg, false);
-                if (response) setChatHistory(prev => [...prev, { role: 'model', text: response }]);
-            };
-
-            useEffect(() => {
-                const targetDate = new Date('2026-03-01T00:00:00');
-                const interval = setInterval(() => {
-                    const diff = targetDate - new Date();
-                    if (diff > 0) {
-                        setTimeLeft({
-                            days: Math.floor(diff / 86400000),
-                            hours: Math.floor((diff / 3600000) % 24),
-                            minutes: Math.floor((diff / 60000) % 60),
-                        });
-                    }
-                }, 1000);
-                return () => clearInterval(interval);
-            }, []);
-
-            useEffect(() => {
-                const handleScroll = () => setIsScrolled(window.scrollY > 50);
-                window.addEventListener('scroll', handleScroll);
-                return () => window.removeEventListener('scroll', handleScroll);
-            }, []);
-
-            const scrollToSection = (id) => {
-                const element = document.getElementById(id);
-                if (element) {
-                    element.scrollIntoView({ behavior: 'smooth' });
-                    setIsMobileMenuOpen(false);
-                }
-            };
+            const [tab, setTab] = React.useState('drill');
+            const [timeLeft, setTimeLeft] = React.useState({ d: 20, h: 5, m: 30 });
 
             return (
-                <div className="text-slate-200 bg-[#1a0b14] min-h-screen selection:bg-yellow-500 selection:text-slate-900">
-                    {/* Top Bar */}
-                    <div className="bg-[#2D0A1E] text-white py-2 text-xs border-b border-white/10">
-                        <div className="container mx-auto px-4 flex justify-between items-center">
-                            <div className="flex gap-4">
+                <div className="min-h-screen">
+                    {/* NAV */}
+                    <nav className="p-5 flex justify-between items-center border-b border-white/10 sticky top-0 bg-[#1a0b14] z-50">
+                        <div className="flex items-center gap-3">
+                            <div className="bg-yellow-500 p-2 rounded-lg text-black"><i className="fas fa-shield-alt"></i></div>
+                            <div>
+                                <h1 className="font-bold tracking-tighter">IMPERIUM</h1>
+                                <p className="text-[10px] text-yellow-500 font-bold uppercase tracking-widest">Smart Class</p>
+                            </div>
+                        </div>
+                        <a href="https://wa.me/6285185443185" className="bg-yellow-500 text-black px-4 py-2 rounded-full font-bold text-xs">DAFTAR</a>
+                    </nav>
+
+                    {/* HERO */}
+                    <header className="p-8 text-center py-16">
+                        <div className="inline-block border border-yellow-500/50 px-3 py-1 rounded-full text-[10px] font-bold text-yellow-500 mb-6 uppercase">Pusat Pelatihan Strategis</div>
+                        <h1 className="text-4xl font-extrabold mb-6 italic uppercase">Menuju Garis <span className="text-yellow-500">Finish</span> Dengan Kemenangan</h1>
+                        <p className="text-slate-400 text-sm max-w-md mx-auto mb-8">Spesialis persiapan TNI, POLRI, & Kedinasan. Unggul dalam Karakter, Akademik, dan Fisik.</p>
+                        
+                        <div className="glass p-6 rounded-2xl max-w-xs mx-auto mb-10 border-yellow-500">
+                            <p className="text-[10px] font-bold text-red-500 mb-3 uppercase tracking-tighter">Penawaran Batch 1 Berakhir:</p>
+                            <div className="flex justify-around font-bold">
+                                <div><p className="text-2xl">{timeLeft.d}</p><p className="text-[8px] text-slate-500">HARI</p></div>
+                                <div><p className="text-2xl text-yellow-500">:</p></div>
+                                <div><p className="text-2xl">{timeLeft.h}</p><p className="text-[8px] text-slate-500">JAM</p></div>
+                                <div><p className="text-2xl text-yellow-500">:</p></div>
+                                <div><p className="text-2xl">{timeLeft.m}</p><p className="text-[8px] text-slate-500">MENIT</p></div>
+                            </div>
+                        </div>
+                        <button className="w-full max-w-xs bg-yellow-500 text-black py-4 rounded-xl font-black shadow-lg shadow-yellow-500/20">AMBIL DISKON 50%</button>
+                    </header>
+
+                    {/* AI SECTION */}
+                    <section className="p-6 bg-[#0f050b] border-y border-white/5 py-12">
+                        <div className="text-center mb-8">
+                            <h2 className="text-xl font-bold flex items-center justify-center gap-2"><i className="fas fa-brain text-yellow-500"></i> IMPERIUM TACTICAL AI</h2>
+                            <p className="text-[10px] text-slate-500 mt-2">Sistem Simulasi & Konsultasi Real-time</p>
+                        </div>
+                        
+                        <div className="glass rounded-3xl overflow-hidden min-h-[300px]">
+                            <div className="flex border-b border-white/10 text-[10px] font-bold">
+                                <button onClick={() => setTab('drill')} className={`flex-1 py-4 ${tab==='drill' ? 'bg-yellow-500 text-black' : ''}`}>SIMULASI SOAL</button>
+                                <button onClick={() => setTab('chat')} className={`flex-1 py-4 ${tab==='chat' ? 'bg-yellow-500 text-black' : ''}`}>KONSULTASI</button>
+                            </div>
+                            
+                            <div className="p-8 text-center">
+                                {tab === 'drill' ? (
+                                    <div className="animate-pulse">
+                                        <i className="fas fa-crosshairs text-4xl text-yellow-500/20 mb-4"></i>
+                                        <p className="text-sm text-slate-400">Menghubungkan ke Server CAT...</p>
+                                        <button className="mt-6 border border-yellow-500 text-yellow-500 px-6 py-2 rounded-lg text-xs font-bold uppercase">Mulai Simulasi</button>
+                                    </div>
+                                ) : (
+                                    <div className="text-left">
+                                        <div className="bg-white/5 p-4 rounded-xl mb-4 text-xs italic text-slate-300 border-l-2 border-yellow-500">
+                                            "Siap, Calon Siswa! Masukkan pertanyaanmu mengenai strategi seleksi."
+                                        </div>
+                                        <div className="relative mt-20">
+                                            <input className="w-full bg-black/50 border border-white/10 rounded-lg p-3 text-xs" placeholder="Tanya sesuatu..." />
+                                            <button className="absolute right-2 top-2 text-yellow-500"><i className="fas fa-paper-plane"></i></button>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </section>
+
+                    {/* PILLARS */}
+                    <section className="p-6 py-16 grid grid-cols-2 gap-4">
+                        {[
+                            {t: 'AKADEMIK', i: 'fa-target-light'},
+                            {t: 'JASMANI', i: 'fa-bolt'},
+                            {t: 'PSIKOLOGI', i: 'fa-brain'},
+                            {t: 'MENTAL', i: 'fa-shield-halved'}
+                        ].map(p => (
+                            <div key={p.t} className="glass p-6 rounded-2xl text-center">
+                                <i className={`fas ${p.i} text-yellow-500 text-xl mb-3`}></i>
+                                <h3 className="text-[10px] font-bold tracking-widest">{p.t}</h3>
+                            </div>
+                        ))}
+                    </section>
+
+                    <footer className="p-8 text-center text-slate-600 border-t border-
