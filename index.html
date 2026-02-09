@@ -1,320 +1,207 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Shield, Users, Target, Zap, Phone, MapPin, CheckCircle, Clock, Star, ChevronRight, Menu, X, Instagram, Brain, MessageSquare, RefreshCw, Send, Loader } from 'lucide-react';
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Imperium Smart Class | Bimbel TNI/POLRI Terbaik di Batam</title>
+    
+    <meta name="description" content="Bimbel persiapan masuk TNI, POLRI, & Kedinasan di Sagulung, Batam. Persiapan Akademik, Psikologi, dan Jasmani berstandar Elite.">
+    <meta name="keywords" content="bimbel polri batam, bimbel tni batam, persiapan kedinasan batam, bimbel sagulung, bimbel batu aji">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-export default function App() {
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0 });
-  
-  // --- FORM STATE ---
-  const [formData, setFormData] = useState({ nama: '', alamat: '', minat: 'POLRI', nomor: '' });
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #1a0b14; }
+        .glass { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); }
+        .glow-yellow { box-shadow: 0 0 20px rgba(234, 179, 8, 0.2); }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
 
-  // --- AI STATE ---
-  const [aiMode, setAiMode] = useState('drill'); 
-  const [drillCategory, setDrillCategory] = useState('TWK');
-  const [drillData, setDrillData] = useState(null);
-  const [userAnswer, setUserAnswer] = useState(null);
-  const [chatHistory, setChatHistory] = useState([
-    { role: 'model', text: 'Siap! Saya Komandan AI Imperium. Ada yang bisa saya bantu untuk strategi persiapanmu, Calon Taruna?' }
-  ]);
-  const [chatInput, setChatInput] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const chatEndRef = useRef(null);
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+        const { Shield, Target, Zap, Phone, MapPin, Brain, MessageSquare, RefreshCw, Send, Loader, ChevronRight, Menu, X, Instagram, Clock } = lucide;
 
-  // --- AI LOGIC ---
-  const callGemini = async (prompt, isJson = false) => {
-    setIsLoading(true);
-    const apiKey = "MASUKKAN_API_KEY_ANDA_DISINI"; 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+        function App() {
+            const [aiMode, setAiMode] = useState('drill');
+            const [drillData, setDrillData] = useState(null);
+            const [isLoading, setIsLoading] = useState(false);
+            const [userAnswer, setUserAnswer] = useState(null);
+            const [formData, setFormData] = useState({ nama: '', alamat: '', minat: 'POLRI', nomor: '' });
+            const [chatHistory, setChatHistory] = useState([{ role: 'model', text: 'Siap! Saya Komandan AI Imperium. Ada yang bisa saya bantu untuk strategi persiapanmu, Calon Taruna?' }]);
+            const [chatInput, setChatInput] = useState('');
 
-    const systemInstruction = isJson 
-      ? "Anda adalah instruktur elite TNI/POLRI. Buat 1 soal HOTS (TWK/TIU/TKP) dalam format JSON: {question, options:[], correctIndex, explanation}. Tanpa markdown."
-      : "Anda adalah Komandan Mentor Imperium Smart Class Batam. Jawab tegas, taktis, bijak, dan panggil user 'Calon Taruna'. Fokus pada strategi lulus seleksi.";
+            // --- GANTI API KEY DI SINI ---
+            const API_KEY = "MASUKKAN_API_KEY_ANDA_DISINI";
 
-    try {
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          systemInstruction: { parts: [{ text: systemInstruction }] },
-          generationConfig: isJson ? { responseMimeType: "application/json" } : {}
-        })
-      });
-      const data = await response.json();
-      const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-      setIsLoading(false);
-      return isJson ? JSON.parse(text) : text;
-    } catch (error) {
-      console.error("Error:", error);
-      setIsLoading(false);
-      return null;
-    }
-  };
+            const callGemini = async (prompt, isJson = false) => {
+                setIsLoading(true);
+                const system = isJson 
+                    ? "Anda instruktur CAT TNI/POLRI. Buat 1 soal HOTS (TWK/TIU/TKP) dalam JSON: {question, options:[], correctIndex, explanation}. Tanpa markdown."
+                    : "Anda Komandan Mentor Imperium Smart Class Batam. Jawab tegas, taktis, bijak, panggil user 'Calon Taruna'.";
+                
+                try {
+                    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`, {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            contents: [{ parts: [{ text: prompt }] }],
+                            systemInstruction: { parts: [{ text: system }] },
+                            generationConfig: isJson ? { responseMimeType: "application/json" } : {}
+                        })
+                    });
+                    const data = await res.json();
+                    const text = data.candidates[0].content.parts[0].text;
+                    setIsLoading(false);
+                    return isJson ? JSON.parse(text) : text;
+                } catch (e) {
+                    setIsLoading(false);
+                    return null;
+                }
+            };
 
-  const handleGenerateDrill = async () => {
-    setDrillData(null);
-    setUserAnswer(null);
-    const prompt = `Buatkan 1 soal pilihan ganda (A-E) untuk kategori ${drillCategory}.`;
-    const data = await callGemini(prompt, true);
-    if (data) setDrillData(data);
-  };
+            const handleDrill = async () => {
+                setDrillData(null); setUserAnswer(null);
+                const data = await callGemini("Buatkan 1 soal pilihan ganda HOTS.", true);
+                if(data) setDrillData(data);
+            };
 
-  const handleChatSend = async () => {
-    if (!chatInput.trim() || isLoading) return;
-    const userMsg = chatInput;
-    setChatHistory(prev => [...prev, { role: 'user', text: userMsg }]);
-    setChatInput('');
-    const response = await callGemini(userMsg, false);
-    if (response) setChatHistory(prev => [...prev, { role: 'model', text: response }]);
-  };
+            const handleChat = async () => {
+                if(!chatInput.trim()) return;
+                const msg = chatInput;
+                setChatHistory(prev => [...prev, { role: 'user', text: msg }]);
+                setChatInput('');
+                const res = await callGemini(msg, false);
+                if(res) setChatHistory(prev => [...prev, { role: 'model', text: res }]);
+            };
 
-  const sendRegistration = () => {
-    if(!formData.nama || !formData.nomor) return alert("Mohon isi nama dan nomor WA, Ndan!");
-    const message = `Halo Admin Imperium! Saya ingin daftar Batch 1.%0A%0A*Data Calon Siswa:* %0A- Nama: ${formData.nama}%0A- Alamat: ${formData.alamat}%0A- Minat: ${formData.minat}%0A- WA: ${formData.nomor}%0A%0ASiap menuju garis finish!`;
-    window.open(`https://wa.me/6285185443185?text=${message}`, '_blank');
-  };
+            const sendWA = () => {
+                if(!formData.nama || !formData.nomor) return alert("Isi data dulu, Ndan!");
+                const msg = `Halo Admin Imperium!%0A*Pendaftaran Batch 1*%0ANama: ${formData.nama}%0AAlamat: ${formData.alamat}%0AMinat: ${formData.minat}%0AWA: ${formData.nomor}`;
+                window.open(`https://wa.me/6285185443185?text=${msg}`);
+            };
 
-  // --- EFFECTS ---
-  useEffect(() => {
-    const targetDate = new Date('2026-03-01T00:00:00');
-    const interval = setInterval(() => {
-      const now = new Date();
-      const difference = targetDate - now;
-      if (difference > 0) {
-        setTimeLeft({
-          days: Math.floor(difference / (1000 * 60 * 60 * 24)),
-          hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
-          minutes: Math.floor((difference / 1000 / 60) % 60),
-        });
-      }
-    }, 1000);
-    return () => clearInterval(interval);
-  }, []);
+            return (
+                <div className="text-slate-200">
+                    {/* Header */}
+                    <nav className="p-5 border-b border-white/10 sticky top-0 bg-[#1a0b14]/90 backdrop-blur-md z-50">
+                        <div className="container mx-auto flex justify-between items-center">
+                            <div className="flex items-center gap-2">
+                                <div className="bg-yellow-500 p-2 rounded-lg text-[#1a0b14]"><i data-lucide="shield"></i></div>
+                                <div>
+                                    <h1 className="font-bold text-xl tracking-tighter">IMPERIUM</h1>
+                                    <p className="text-[10px] text-yellow-500 font-bold uppercase tracking-widest leading-none">Smart Class</p>
+                                </div>
+                            </div>
+                            <button onClick={() => document.getElementById('daftar').scrollIntoView({behavior:'smooth'})} className="bg-yellow-500 text-[#1a0b14] px-5 py-2 rounded-full font-bold text-sm">Daftar Batch 1</button>
+                        </div>
+                    </nav>
 
-  useEffect(() => {
-    const handleScroll = () => setIsScrolled(window.scrollY > 50);
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+                    {/* Hero */}
+                    <section className="py-20 px-6 text-center">
+                        <span className="text-yellow-500 font-bold text-xs uppercase tracking-[0.3em] mb-4 block">Sagulung - Batu Aji - Batam</span>
+                        <h1 className="text-5xl md:text-7xl font-extrabold mb-6 leading-tight">Menuju Garis <span className="text-yellow-500 italic">Finish</span> Kemenangan.</h1>
+                        <p className="max-w-2xl mx-auto text-slate-400 text-lg mb-10">Pusat pelatihan taktis masuk TNI, POLRI, dan Kedinasan dengan kurikulum standar Elite di Batam.</p>
+                        <div className="flex justify-center gap-4">
+                            <div className="bg-[#2D0A1E] border border-yellow-500/30 p-4 rounded-xl">
+                                <p className="text-xs uppercase text-slate-400">Sisa Kuota Diskon</p>
+                                <p className="text-2xl font-black text-yellow-500">5 Kursi</p>
+                            </div>
+                        </div>
+                    </section>
 
-  const scrollToSection = (id) => {
-    const element = document.getElementById(id);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-      setIsMobileMenuOpen(false);
-    }
-  };
+                    {/* AI Center */}
+                    <section className="py-20 bg-[#15050e] px-6">
+                        <div className="max-w-4xl mx-auto glass p-8 rounded-3xl border border-white/10 glow-yellow">
+                            <div className="flex justify-between items-center mb-8">
+                                <h2 className="text-2xl font-bold flex items-center gap-2"><i data-lucide="brain" className="text-yellow-500"></i> Tactical AI Center</h2>
+                                <div className="flex bg-[#1a0b14] p-1 rounded-lg">
+                                    <button onClick={() => setAiMode('drill')} className={`px-4 py-2 rounded-md text-xs font-bold ${aiMode==='drill'?'bg-yellow-500 text-[#1a0b14]':'text-slate-500'}`}>Drill</button>
+                                    <button onClick={() => setAiMode('chat')} className={`px-4 py-2 rounded-md text-xs font-bold ${aiMode==='chat'?'bg-yellow-500 text-[#1a0b14]':'text-slate-500'}`}>Konsultasi</button>
+                                </div>
+                            </div>
 
-  return (
-    <div className="font-sans text-slate-800 bg-[#1a0b14] min-h-screen selection:bg-yellow-500 selection:text-slate-900">
-      
-      {/* Top Bar */}
-      <div className="bg-[#2D0A1E] text-white py-2 text-xs md:text-sm border-b border-white/10">
-        <div className="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-2">
-          <div className="flex items-center gap-4">
-            <span className="flex items-center gap-1"><Phone size={14} className="text-yellow-500" /> 0851 8544 3185</span>
-            <span className="flex items-center gap-1"><Phone size={14} className="text-yellow-500" /> 0859 6018 4775</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <MapPin size={14} className="text-yellow-500" />
-            <span>Ruko Trade Center Blok J no 11, Sagulung, Batam</span>
-          </div>
-        </div>
-      </div>
+                            {aiMode === 'drill' ? (
+                                <div className="text-center py-10">
+                                    {!drillData ? (
+                                        <button onClick={handleDrill} disabled={isLoading} className="bg-yellow-500 text-[#1a0b14] px-8 py-4 rounded-xl font-bold flex items-center gap-2 mx-auto uppercase tracking-wider">
+                                            {isLoading ? "Mempersiapkan Soal..." : "Mulai Simulasi CAT"}
+                                        </button>
+                                    ) : (
+                                        <div className="text-left animate-in fade-in duration-500">
+                                            <p className="text-xl mb-6">{drillData.question}</p>
+                                            <div className="grid gap-3 mb-6">
+                                                {drillData.options.map((o, i) => (
+                                                    <button key={i} onClick={() => setUserAnswer(i)} disabled={userAnswer!==null} className={`p-4 rounded-xl border text-left ${userAnswer===null?'border-white/10 hover:border-yellow-500':i===drillData.correctIndex?'border-green-500 bg-green-500/10':'border-red-500 bg-red-500/10 opacity-50'}`}>{o}</button>
+                                                ))}
+                                            </div>
+                                            {userAnswer!==null && <div className="p-4 bg-yellow-500/10 border-l-4 border-yellow-500 text-sm mb-4">{drillData.explanation}</div>}
+                                            <button onClick={handleDrill} className="text-yellow-500 font-bold flex items-center gap-1"><i data-lucide="refresh-cw" size="14"></i> Soal Berikutnya</button>
+                                        </div>
+                                    )}
+                                </div>
+                            ) : (
+                                <div className="h-[400px] flex flex-col">
+                                    <div className="flex-1 overflow-y-auto mb-4 space-y-4 pr-2">
+                                        {chatHistory.map((m, i) => (
+                                            <div key={i} className={`flex ${m.role==='user'?'justify-end':'justify-start'}`}>
+                                                <div className={`p-3 rounded-2xl max-w-[85%] text-sm ${m.role==='user'?'bg-yellow-500 text-[#1a0b14]':'bg-[#2D0A1E]'}`}>{m.text}</div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <input value={chatInput} onChange={e=>setChatInput(e.target.value)} onKeyDown={e=>e.key==='Enter'&&handleChat()} className="flex-1 bg-black/40 border border-white/10 rounded-xl px-4 py-3 outline-none" placeholder="Tanya strategi..." />
+                                        <button onClick={handleChat} className="bg-yellow-500 text-[#1a0b14] p-3 rounded-xl"><i data-lucide="send"></i></button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </section>
 
-      {/* Navigation */}
-      <nav className={`sticky top-0 z-50 transition-all duration-300 border-b border-white/5 ${isScrolled ? 'bg-[#1a0b14]/95 backdrop-blur-md py-3 shadow-xl' : 'bg-[#1a0b14] py-5'}`}>
-        <div className="container mx-auto px-6 flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-lg flex items-center justify-center shadow-lg shadow-yellow-500/20 font-bold">
-              <Shield className="text-[#1a0b14] fill-current" size={24} />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-white leading-none tracking-wide">IMPERIUM</h1>
-              <p className="text-[10px] text-yellow-500 tracking-[0.2em] font-bold uppercase">Smart Class Batam</p>
-            </div>
-          </div>
-          <div className="hidden md:flex items-center gap-8">
-            {['AI Center', 'Program', 'Pendaftaran', 'Lokasi'].map((item) => (
-              <button key={item} onClick={() => scrollToSection(item.toLowerCase().replace(' ', '-'))} className="text-sm font-medium text-slate-300 hover:text-yellow-400 transition-colors uppercase tracking-wide">
-                {item}
-              </button>
-            ))}
-            <button onClick={() => scrollToSection('pendaftaran')} className="bg-yellow-500 hover:bg-yellow-400 text-[#1a0b14] px-6 py-2 rounded-full font-bold text-sm transition-all transform hover:scale-105 shadow-lg shadow-yellow-500/20">
-              Daftar Batch 1
-            </button>
-          </div>
-          <button className="md:hidden text-yellow-500" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
-            {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
-          </button>
-        </div>
-      </nav>
+                    {/* Form */}
+                    <section id="daftar" className="py-24 px-6">
+                        <div className="max-w-xl mx-auto bg-gradient-to-b from-[#2D0A1E] to-[#1a0b14] p-8 rounded-3xl border border-yellow-500/20">
+                            <h2 className="text-3xl font-bold text-center mb-6 text-white uppercase tracking-tighter">Pendaftaran Batch 1</h2>
+                            <div className="space-y-4">
+                                <input placeholder="Nama Lengkap" className="w-full p-4 rounded-xl bg-black/30 border border-white/10 focus:border-yellow-500 outline-none" onChange={e=>setFormData({...formData, nama: e.target.value})} />
+                                <input placeholder="Nomor WhatsApp" className="w-full p-4 rounded-xl bg-black/30 border border-white/10 focus:border-yellow-500 outline-none" onChange={e=>setFormData({...formData, nomor: e.target.value})} />
+                                <select className="w-full p-4 rounded-xl bg-black/30 border border-white/10 outline-none" onChange={e=>setFormData({...formData, minat: e.target.value})}>
+                                    <option>POLRI</option>
+                                    <option>TNI</option>
+                                    <option>Kedinasan</option>
+                                </select>
+                                <button onClick={sendWA} className="w-full bg-yellow-500 text-[#1a0b14] py-4 rounded-xl font-black text-lg shadow-lg hover:bg-yellow-400 transition-all uppercase tracking-widest">Kirim ke Mako Imperium</button>
+                            </div>
+                        </div>
+                    </section>
 
-      {/* Hero Section */}
-      <section className="relative pt-12 pb-20 lg:pt-24 lg:pb-32 overflow-hidden">
-        <div className="container mx-auto px-6">
-          <div className="flex flex-col lg:flex-row items-center gap-16">
-            <div className="lg:w-1/2">
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-yellow-500/10 border border-yellow-500/30 rounded-full mb-6">
-                <span className="text-yellow-500 text-xs font-bold tracking-widest uppercase">Anak Sagulung & Batu Aji Siap Pakai Seragam</span>
-              </div>
-              <h1 className="text-4xl lg:text-6xl font-extrabold text-white leading-tight mb-6">
-                Menuju Garis <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-yellow-600">Finish</span> Dengan Kemenangan.
-              </h1>
-              <p className="text-lg text-slate-300 mb-8 leading-relaxed border-l-4 border-yellow-500 pl-6">
-                Lokasi strategis di <b>Trade Center Sagulung</b>. Tak perlu jauh-jauh ke pusat kota untuk mendapatkan pelatihan standar Elite masuk TNI/POLRI.
-              </p>
-              
-              {/* Promo Box */}
-              <div className="bg-white/5 backdrop-blur-sm border border-yellow-500/30 p-6 rounded-2xl mb-8 relative overflow-hidden group">
-                <div className="flex items-center gap-4">
-                  <div className="bg-red-600 p-3 rounded-lg text-white text-center min-w-[80px]">
-                    <span className="block text-xs uppercase font-bold tracking-tighter">Diskon</span>
-                    <span className="block text-2xl font-extrabold">50%</span>
-                  </div>
-                  <div>
-                    <h3 className="text-white font-bold text-lg">Batch 1: Elite Squad</h3>
-                    <p className="text-slate-400 text-sm">Hanya untuk 20 Orang Pertama. Sisa: <span className="text-yellow-400 font-bold">5 Kursi</span>.</p>
-                  </div>
+                    {/* Footer */}
+                    <footer className="py-12 border-t border-white/5 bg-black/20 px-6">
+                        <div className="container mx-auto grid md:grid-cols-2 gap-8 items-center">
+                            <div>
+                                <h4 className="font-bold text-white mb-2 uppercase tracking-widest">Markas Komando</h4>
+                                <p className="text-slate-500 text-sm">Ruko Trade Center Blok J No. 11, Sagulung, Batam.</p>
+                            </div>
+                            <div className="flex md:justify-end gap-6 text-yellow-500">
+                                <a href="#"><i data-lucide="instagram"></i></a>
+                                <a href="#"><i data-lucide="phone"></i></a>
+                            </div>
+                        </div>
+                    </footer>
                 </div>
-              </div>
+            );
+        }
 
-              <div className="flex flex-col sm:flex-row gap-4">
-                <button onClick={() => scrollToSection('pendaftaran')} className="flex items-center justify-center gap-2 bg-yellow-500 text-[#1a0b14] px-8 py-4 rounded-lg font-bold hover:bg-yellow-400 transition-all shadow-lg">
-                  Ambil Kuota Diskon <ChevronRight size={20} />
-                </button>
-              </div>
-            </div>
-            
-            <div className="lg:w-1/2 relative">
-               <div className="relative z-10 grid grid-cols-2 gap-4">
-                 <img src="https://images.unsplash.com/photo-1595152452543-e5cca283b514?auto=format&fit=crop&w=600" alt="Academic" className="rounded-2xl border-2 border-[#2D0A1E] transform translate-y-8" />
-                 <img src="https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?auto=format&fit=crop&w=600" alt="Physical" className="rounded-2xl border-2 border-yellow-500" />
-               </div>
-            </div>
-          </div>
-        </div>
-      </section>
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
 
-      {/* AI Section */}
-      <section id="ai-center" className="py-20 bg-[#15050e] border-y border-white/5">
-        <div className="container mx-auto px-6">
-          <div className="flex flex-col md:flex-row items-center justify-between mb-12 gap-6">
-            <div>
-              <div className="flex items-center gap-3 mb-2">
-                <Brain className="text-yellow-500" size={32} />
-                <h2 className="text-3xl font-bold text-white">Imperium Tactical AI ✨</h2>
-              </div>
-              <p className="text-slate-400">Simulasi CAT dan Konsultasi Mentor secara real-time.</p>
-            </div>
-            <div className="flex bg-[#2D0A1E] p-1 rounded-lg border border-white/10">
-              <button onClick={() => setAiMode('drill')} className={`px-6 py-2 rounded-md font-bold text-sm ${aiMode === 'drill' ? 'bg-yellow-500 text-[#1a0b14]' : 'text-slate-400'}`}>Target Drill</button>
-              <button onClick={() => setAiMode('consult')} className={`px-6 py-2 rounded-md font-bold text-sm ${aiMode === 'consult' ? 'bg-yellow-500 text-[#1a0b14]' : 'text-slate-400'}`}>Konsultasi</button>
-            </div>
-          </div>
-
-          <div className="bg-[#1a0b14] border border-white/10 rounded-2xl p-6 md:p-8 min-h-[450px] shadow-2xl relative">
-            {aiMode === 'drill' ? (
-              <div className="max-w-3xl mx-auto">
-                {!drillData ? (
-                  <div className="text-center py-12">
-                    <h3 className="text-white text-xl font-bold mb-6">Pilih Sektor Latihan:</h3>
-                    <div className="flex justify-center gap-4 mb-8">
-                      {['TWK', 'TIU', 'TKP'].map(cat => (
-                        <button key={cat} onClick={() => setDrillCategory(cat)} className={`px-6 py-3 rounded-xl border ${drillCategory === cat ? 'border-yellow-500 text-yellow-500 bg-yellow-500/10' : 'border-white/10 text-slate-400'}`}>{cat}</button>
-                      ))}
-                    </div>
-                    <button onClick={handleGenerateDrill} disabled={isLoading} className="bg-yellow-500 text-[#1a0b14] px-10 py-4 rounded-xl font-bold flex items-center gap-3 mx-auto">
-                      {isLoading ? <Loader className="animate-spin" /> : <RefreshCw />} Generate Soal
-                    </button>
-                  </div>
-                ) : (
-                  <div>
-                    <h4 className="text-white text-xl mb-8 leading-relaxed">{drillData.question}</h4>
-                    <div className="space-y-3 mb-8">
-                      {drillData.options.map((opt, idx) => (
-                        <button key={idx} onClick={() => setUserAnswer(idx)} disabled={userAnswer !== null} className={`w-full text-left p-4 rounded-xl border ${userAnswer === null ? 'border-white/10 text-slate-300' : idx === drillData.correctIndex ? 'border-green-500 bg-green-500/20 text-green-400' : userAnswer === idx ? 'border-red-500 bg-red-500/20 text-red-400' : 'opacity-30'}`}>
-                          <span className="font-bold mr-3">{String.fromCharCode(65+idx)}.</span>{opt}
-                        </button>
-                      ))}
-                    </div>
-                    {userAnswer !== null && <div className="bg-[#2D0A1E] p-4 rounded-xl border-l-4 border-yellow-500 text-slate-300">{drillData.explanation}</div>}
-                    <button onClick={handleGenerateDrill} className="mt-6 text-yellow-500 flex items-center gap-2"><RefreshCw size={16}/> Coba Soal Lain</button>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className="flex flex-col h-[400px]">
-                <div className="flex-1 overflow-y-auto space-y-4 mb-4 pr-2">
-                  {chatHistory.map((msg, i) => (
-                    <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                      <div className={`max-w-[80%] p-4 rounded-2xl ${msg.role === 'user' ? 'bg-yellow-500 text-[#1a0b14]' : 'bg-[#2D0A1E] text-slate-200'}`}>
-                        <p className="text-sm whitespace-pre-wrap">{msg.text}</p>
-                      </div>
-                    </div>
-                  ))}
-                  <div ref={chatEndRef} />
-                </div>
-                <div className="relative">
-                  <input value={chatInput} onChange={e => setChatInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleChatSend()} placeholder="Tanyakan strategi tempurmu..." className="w-full bg-[#0f050b] border border-white/20 rounded-xl py-4 pl-6 pr-14 text-white" />
-                  <button onClick={handleChatSend} disabled={isLoading} className="absolute right-2 top-2 p-2 bg-yellow-500 rounded-lg text-[#1a0b14]"><Send size={20}/></button>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </section>
-
-      {/* Registration Form */}
-      <section id="pendaftaran" className="py-20 bg-[#1a0b14]">
-        <div className="container mx-auto px-6">
-          <div className="max-w-2xl mx-auto bg-gradient-to-br from-[#2D0A1E] to-[#1a0b14] border border-yellow-500/30 p-8 md:p-12 rounded-3xl shadow-2xl">
-            <h2 className="text-3xl font-bold text-white text-center mb-2">Pendaftaran Batch 1</h2>
-            <p className="text-center text-slate-400 mb-8 font-medium">Isi formulir untuk mengamankan kuota diskon 50% Anda.</p>
-            <div className="space-y-4">
-              <input type="text" placeholder="Nama Lengkap Calon Siswa" className="w-full p-4 bg-[#0f050b] border border-white/20 rounded-xl text-white outline-none focus:border-yellow-500" onChange={e => setFormData({...formData, nama: e.target.value})} />
-              <input type="text" placeholder="Alamat / Kecamatan (Contoh: Sagulung)" className="w-full p-4 bg-[#0f050b] border border-white/20 rounded-xl text-white outline-none focus:border-yellow-500" onChange={e => setFormData({...formData, alamat: e.target.value})} />
-              <input type="number" placeholder="Nomor WA Aktif" className="w-full p-4 bg-[#0f050b] border border-white/20 rounded-xl text-white outline-none focus:border-yellow-500" onChange={e => setFormData({...formData, nomor: e.target.value})} />
-              <select className="w-full p-4 bg-[#0f050b] border border-white/20 rounded-xl text-white outline-none focus:border-yellow-500" onChange={e => setFormData({...formData, minat: e.target.value})}>
-                <option value="POLRI">Peminatan: POLRI</option>
-                <option value="TNI">Peminatan: TNI (AD/AL/AU)</option>
-                <option value="KEDINASAN">Peminatan: Kedinasan (IPDN/STIS/dll)</option>
-              </select>
-              <button onClick={sendRegistration} className="w-full bg-yellow-500 text-[#1a0b14] py-5 rounded-xl font-black text-lg hover:bg-yellow-400 transition-all shadow-lg transform hover:-translate-y-1">
-                KIRIM DATA KE ADMIN SEKARANG
-              </button>
-            </div>
-            <p className="text-center text-[10px] text-slate-500 mt-4 uppercase tracking-widest">Data Anda akan diproses secara rahasia oleh Mako Imperium</p>
-          </div>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer id="lokasi" className="bg-[#0f050b] text-slate-400 py-12 border-t border-white/10 text-center md:text-left">
-        <div className="container mx-auto px-6 grid md:grid-cols-3 gap-12">
-          <div>
-            <div className="flex items-center gap-2 mb-4 justify-center md:justify-start">
-              <Shield className="text-yellow-500" size={24} />
-              <span className="text-xl font-bold text-white">IMPERIUM</span>
-            </div>
-            <p className="text-sm">Bimbel spesialis kedinasan dengan kurikulum terstruktur dan pelatih profesional. Berpusat di Sagulung, Batam.</p>
-          </div>
-          <div>
-            <h4 className="text-white font-bold mb-4 uppercase text-sm">Markas Komando</h4>
-            <p className="text-sm mb-2 flex items-center gap-2 justify-center md:justify-start"><MapPin size={16} className="text-yellow-500" /> Ruko Trade Center Blok J No. 11, Sagulung, Batam.</p>
-            <p className="text-sm flex items-center gap-2 justify-center md:justify-start"><Clock size={16} className="text-yellow-500" /> Senin - Sabtu: 08.00 - 20.00 WIB</p>
-          </div>
-          <div>
-            <h4 className="text-white font-bold mb-4 uppercase text-sm">Media Sosial</h4>
-            <div className="flex gap-4 justify-center md:justify-start">
-              <a href="https://instagram.com/imperium.smartclass" className="p-2 bg-[#2D0A1E] rounded-full hover:bg-yellow-500 hover:text-[#1a0b14]"><Instagram size={20} /></a>
-              <a href="https://wa.me/6285185443185" className="p-2 bg-[#2D0A1E] rounded-full hover:bg-yellow-500 hover:text-[#1a0b14]"><Phone size={20} /></a>
-            </div>
-          </div>
-        </div>
-        <div className="mt-12 text-[10px] uppercase tracking-widest border-t border-white/5 pt-8 text-center">&copy; 2026 Imperium Smart Class. Menuju Garis Finish.</div>
-      </footer>
-    </div>
-  );
-}
+        // Initialize Icons
+        setTimeout(() => lucide.createIcons(), 500);
+    </script>
+</body>
+</html>
