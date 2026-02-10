@@ -253,14 +253,38 @@ Ambil Paket Ini
 </div>
 </section>
 
-<footer className="bg-maroon py-16 border-t border-white/5 text-center">
-<div className="font-black text-2xl text-white tracking-tighter mb-2 italic">IMPERIUM <span className="text-gold underline">2026</span></div>
-<p className="text-slate-600 text-[10px] tracking-[0.4em] uppercase font-bold mb-8">Batam - Kepulauan Riau</p>
-<div className="flex justify-center gap-6 text-slate-400">
-<a href="#" className="hover:text-gold transition-colors"><i data-lucide="instagram" size="20"></i></a>
-<a href="#" className="hover:text-gold transition-colors"><i data-lucide="facebook" size="20"></i></a>
-<a href="https://wa.me/6285185443185" className="hover:text-gold transition-colors"><i data-lucide="message-circle" size="20"></i></a>
-</div>
+<footer className="bg-maroon py-16 border-t border-white/5 text-center px-4">
+    <div className="font-black text-2xl text-white tracking-tighter mb-2 italic">
+        IMPERIUM <span className="text-gold underline">2026</span>
+    </div>
+    <p className="text-slate-600 text-[10px] tracking-[0.4em] uppercase font-bold mb-8">
+        Batam - Kepulauan Riau
+    </p>
+    <div className="flex justify-center gap-6 text-slate-400">
+        {/* LINK INSTAGRAM - GANTI 'username' DENGAN USERNAME ANDA */}
+        <a href="https://instagram.com/imperiumsmartclass" 
+           target="_blank" 
+           rel="noopener noreferrer" 
+           className="hover:text-gold transition-colors">
+            <i data-lucide="instagram" size="20"></i>
+        </a>
+
+        {/* LINK FACEBOOK - GANTI LINK SESUAI URL PROFIL ANDA */}
+        <a href="https://facebook.com/imperiumsmartclass" 
+           target="_blank" 
+           rel="noopener noreferrer" 
+           className="hover:text-gold transition-colors">
+            <i data-lucide="facebook" size="20"></i>
+        </a>
+
+        {/* LINK WHATSAPP */}
+        <a href="https://wa.me/6285185443185" 
+           target="_blank" 
+           rel="noopener noreferrer" 
+           className="hover:text-gold transition-colors">
+            <i data-lucide="message-circle" size="20"></i>
+        </a>
+    </div>
 </footer>
 </div>
 );
