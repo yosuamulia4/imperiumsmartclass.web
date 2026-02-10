@@ -3,109 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IMPERIUM SMART CLASS - Strategis & Taktis</title>
+    <title>Imperium Smart Class - Strategis & Taktis</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-    
     <style>
-        body { 
-            font-family: 'Plus Jakarta Sans', sans-serif; 
-            background-color: #0f050a; 
-            color: #f8fafc; 
-            scroll-behavior: smooth; 
-            overflow-x: hidden; 
-        }
-
-        /* Navigasi Highlight */
-        .nav-link.active {
-            color: #eab308;
-            border-bottom: 2px solid #eab308;
-        }
-        
-        /* Glassmorphism & Colors */
-        .glass { background: rgba(45, 10, 30, 0.6); backdrop-filter: blur(12px); border: 1px solid rgba(234, 179, 8, 0.2); }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #1a0b14; color: #f8fafc; scroll-behavior: smooth; }
         .bg-maroon { background-color: #2D0A1E; }
         .text-gold { color: #eab308; }
-        .gold-gradient { background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%); }
-        
-        /* Animasi Marquee */
-        @keyframes marquee {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
-        }
-        .animate-marquee {
-            display: flex;
-            width: 200%;
-            animation: marquee 25s linear infinite;
-        }
-
-        /* Promo Card Effects */
-        .promo-card {
-            background: linear-gradient(145deg, #2D0A1E 0%, #1a0b14 100%);
-            border: 2px solid #eab308;
-            box-shadow: 0 0 40px rgba(234, 179, 8, 0.25);
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .promo-card::after {
-            content: '';
-            position: absolute;
-            top: -50%; left: -50%; width: 200%; height: 200%;
-            background: linear-gradient(45deg, transparent, rgba(234, 179, 8, 0.1), transparent);
-            transform: rotate(45deg);
-            animation: shine 4s infinite;
-        }
-
-        @keyframes shine {
-            0% { left: -100%; }
-            100% { left: 100%; }
-        }
-
-        .badge-flash { animation: flash 1s infinite alternate; }
-        @keyframes flash {
-            from { opacity: 1; transform: scale(1); }
-            to { opacity: 0.8; transform: scale(1.05); }
-        }
-
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-thumb { background: #eab308; border-radius: 10px; }
+        .bg-gold { background-color: #eab308; }
+        .glass { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(10px); border: 1px solid rgba(234, 179, 8, 0.2); }
+        .animate-pulse-slow { animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
     </style>
 </head>
 <body>
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect, useRef } = React;
+        const { useState, useEffect } = React;
 
         function App() {
             const [loading, setLoading] = useState(false);
-            const [activeNav, setActiveNav] = useState('home');
             const [selectedAnswer, setSelectedAnswer] = useState(null);
             const [drillData, setDrillData] = useState({
-                question: "Klik tombol refresh untuk simulasi soal CAT.",
-                options: ["Opsi A", "Opsi B", "Opsi C", "Opsi D", "Opsi E"],
-                answer: 0
+                question: "Sebuah rancangan undang-undang tentang Kedaulatan Data Digital memuat klausul bahwa data pribadi setiap warga negara merupakan aset strategis nasional yang pengelolaannya wajib diutamakan untuk kepentingan pertahanan dan keamanan negara. Jika dikaji dari perspektif filosofis Pancasila, manakah analisis yang paling tepat mengenai potensi konflik nilai yang mungkin timbul akibat penerapan klausul tersebut secara absolut?",
+                options: [
+                    "A. Konflik dengan Sila Ketiga, karena penetapan status aset strategis berpotensi menimbulkan dualisme loyalitas data antara kepentingan individu dan kepentingan integrasi nasional yang tunggal.",
+                    "B. Bertentangan dengan Sila Kelima, sebab penguasaan data secara eksklusif oleh negara dapat menciptakan kesenjangan akses informasi dan memicu oligopoli digital yang merugikan pelaku usaha mikro.",
+                    "C. Bertentangan fundamental dengan Sila Kedua, karena perlakuan data pribadi sebagai 'aset strategis' negara secara mutlak dapat mereduksi harkat dan martabat individu menjadi sekadar objek komputasional semata demi kepentingan kolektif.",
+                    "D. Tidak melanggar Sila Keempat, justru mendukung, karena keputusan penetapan data sebagai aset strategis merupakan wujud kedaulatan rakyat yang diwakilkan kepada badan legislatif.",
+                    "E. Sejalan dengan Pasal 30 UUD 1945, karena merupakan pengejawantahan dari upaya pertahanan dan keamanan rakyat semesta (Sishankamrata) yang menempatkan seluruh sumber daya nasional sebagai kepentingan pertahanan."
+                ],
+                answer: 2
             });
 
-            // Timer Logic
-            const [timeLeft, setTimeLeft] = useState({ days: 18, hours: 20, minutes: 23, seconds: 59 });
-
-            useEffect(() => {
-                const timer = setInterval(() => {
-                    setTimeLeft(prev => {
-                        if (prev.seconds > 0) return { ...prev, seconds: prev.seconds - 1 };
-                        return { ...prev, seconds: 59, minutes: prev.minutes - 1 };
-                    });
-                }, 1000);
-                return () => clearInterval(timer);
-            }, []);
-
-            const API_KEY = "AIzaSyC9XY3pE0Hxnq5ZqI65i4DlDabcRMpbKaA"; // Gunakan Key Anda
+            // API KEY KOMANDAN
+            const API_KEY = "AIzaSyBQu9PW-1Lhwc50EloRrqFnhqBWrYxUEwE";
 
             const fetchNewQuestion = async () => {
                 setLoading(true);
@@ -115,7 +51,7 @@
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
-                            contents: [{ parts: [{ text: "Berikan 1 soal HOTS TWK/TIU Polri/TNI. Format JSON: {\"question\":\"...\",\"options\":[\"A...\",\"B...\",\"C...\",\"D...\",\"E...\"],\"answer\":index_0_to_4}" }] }],
+                            contents: [{ parts: [{ text: "Berikan 1 soal HOTS TWK Polri/TNI. Format JSON: {\"question\":\"...\",\"options\":[\"A...\",\"B...\",\"C...\",\"D...\",\"E...\"],\"answer\":index_0_to_4}" }] }],
                             generationConfig: { responseMimeType: "application/json" }
                         })
                     });
@@ -123,188 +59,212 @@
                     const result = JSON.parse(data.candidates[0].content.parts[0].text);
                     setDrillData(result);
                 } catch (e) {
-                    console.error("Gagal memuat soal.");
+                    alert("Koneksi Error Ndan! Cek API Key atau internet.");
                 }
                 setLoading(false);
             };
 
-            useEffect(() => { if(window.lucide) lucide.createIcons(); }, [drillData, loading]);
+            useEffect(() => { lucide.createIcons(); }, [drillData, loading]);
 
             return (
                 <div className="min-h-screen">
-                    {/* 1. TEXT BERGESER (MARQUEE) */}
-                    <div className="bg-red-700 py-2 border-b border-white/20 overflow-hidden sticky top-0 z-[60]">
-                        <div className="animate-marquee whitespace-nowrap">
-                            {[...Array(4)].map((_, i) => (
-                                <span key={i} className="text-white font-black text-[10px] uppercase tracking-[0.2em] mx-10 flex items-center gap-4">
-                                    <span className="bg-white text-red-700 px-2 py-0.5 rounded">PENGUMUMAN</span> 
-                                    PENDAFTARAN BATCH 1 SISA 5 KURSI LAGI — DISKON 50% BERAKHIR OTOMATIS — HUBUNGI 0851 8544 3185 —
-                                </span>
-                            ))}
+                    {/* TOP INFO */}
+                    <div className="bg-maroon py-2 border-b border-white/10 text-[10px] md:text-xs">
+                        <div className="container mx-auto px-4 flex justify-between items-center text-slate-300 font-bold uppercase tracking-widest">
+                            <div className="flex gap-4"><span>0851 8544 3185</span><span>|</span><span>0859 6018 4775</span></div>
+                            <div className="hidden md:block">Ruko Trade Center Blok J no 11, Sagulung</div>
                         </div>
                     </div>
 
-                    {/* 2. TOP INFO BAR */}
-                    <div className="bg-maroon py-2 border-b border-white/5 text-[10px] hidden md:block">
-                        <div className="container mx-auto px-6 flex justify-between items-center text-slate-400 font-bold uppercase tracking-widest">
-                            <div className="flex gap-6">
-                                <span className="flex items-center gap-2"><i data-lucide="phone" size="12" className="text-gold"></i> 0851 8544 3185</span>
-                                <span className="flex items-center gap-2"><i data-lucide="map-pin" size="12" className="text-gold"></i> Ruko Trade Center Blok J no 11, Batam</span>
+                    {/* NAV */}
+                    <nav className="sticky top-0 z-50 bg-[#1a0b14]/95 border-b border-white/5 py-4">
+                        <div className="container mx-auto px-4 flex justify-between items-center">
+                            <div className="leading-none">
+                                <div className="font-black text-2xl tracking-tighter text-white">IMPERIUM</div>
+                                <div className="text-[10px] text-gold font-bold tracking-[0.3em]">SMART CLASS</div>
                             </div>
-                            <div className="text-gold">Pusat Pelatihan Strategis TNI/POLRI</div>
-                        </div>
-                    </div>
-
-                    {/* 3. NAVIGASI DENGAN HIGHLIGHT */}
-                    <nav className="sticky top-[34px] z-50 glass border-b border-white/10 py-4">
-                        <div className="container mx-auto px-6 flex justify-between items-center">
-                            <div className="flex items-center gap-3">
-                                <div className="gold-gradient p-2 rounded-lg text-black"><i data-lucide="shield-check"></i></div>
-                                <div>
-                                    <div className="font-black text-xl tracking-tighter text-white leading-none">IMPERIUM</div>
-                                    <div className="text-[9px] text-gold font-bold tracking-[0.3em]">SMART CLASS</div>
-                                </div>
+                            <div className="hidden lg:flex gap-8 text-[10px] font-black uppercase tracking-widest text-slate-400">
+                                <a href="#ai" className="hover:text-gold transition-colors">AI Center</a>
+                                <a href="#program" className="hover:text-gold transition-colors">Program</a>
+                                <a href="#keunggulan" className="hover:text-gold transition-colors">Keunggulan</a>
+                                <a href="#fasilitas" className="hover:text-gold transition-colors">Fasilitas</a>
+                                <a href="#lokasi" className="hover:text-gold transition-colors">Lokasi</a>
                             </div>
-                            <div className="hidden lg:flex gap-8 text-[10px] font-black uppercase tracking-widest">
-                                {['home', 'ai', 'program', 'keunggulan'].map((item) => (
-                                    <a 
-                                        key={item}
-                                        href={`#${item}`} 
-                                        onClick={() => setActiveNav(item)}
-                                        className={`transition-all pb-1 ${activeNav === item ? 'text-gold border-b-2 border-gold' : 'text-slate-400 hover:text-white'}`}
-                                    >
-                                        {item === 'ai' ? 'AI Center' : item}
-                                    </a>
-                                ))}
-                            </div>
-                            <a href="https://wa.me/6285185443185" className="gold-gradient text-black px-6 py-2 rounded-full font-black text-[10px] uppercase shadow-lg hover:scale-105 transition-all">Hubungi Admin</a>
+                            <button className="bg-gold text-black px-6 py-2 rounded font-black text-[10px] uppercase">Daftar Batch 1</button>
                         </div>
                     </nav>
 
-                    {/* 4. HERO SECTION */}
-                    <section id="home" className="pt-20 pb-16 text-center px-4 relative overflow-hidden">
-                        <div className="absolute top-10 left-1/2 -translate-x-1/2 w-[400px] h-[400px] bg-gold/10 rounded-full blur-[120px] -z-10 animate-pulse"></div>
-                        <div className="inline-flex items-center gap-2 px-5 py-1.5 border border-gold/30 rounded-full text-gold text-[10px] font-black uppercase mb-8 tracking-[0.3em] bg-gold/5">
-                            <span className="w-2 h-2 bg-gold rounded-full animate-ping"></span>
-                            Tactical Training Center
-                        </div>
-                        <h1 className="text-5xl md:text-7xl font-black mb-8 text-white leading-[1] uppercase tracking-tighter">
-                            TAKTIK <span className="text-gold italic">ELITE</span> <br/> 
-                            HASIL <span className="underline decoration-gold decoration-8 underline-offset-[12px]">NYATA.</span>
-                        </h1>
-                        <p className="max-w-2xl mx-auto text-slate-400 mb-12 text-sm md:text-base font-medium border-l-2 border-gold/40 px-6">
-                            Spesialis persiapan masuk <span className="text-white font-bold">TNI, POLRI, & Kedinasan</span>. Unggul dalam Karakter, Akademik, dan Fisik melalui sistem pelatihan berstandar institusi.
-                        </p>
-
-                        {/* 5. BATCH 1 DISKON 50% CARD */}
-                        <div className="max-w-2xl mx-auto px-4">
-                            <div className="promo-card p-8 md:p-12 rounded-[3rem]">
-                                <div className="absolute top-0 right-0 bg-red-600 text-white font-black text-[10px] px-6 py-2 rounded-bl-2xl badge-flash">URGENT: BATCH 1</div>
-                                <div className="grid md:grid-cols-2 gap-8 items-center text-left">
-                                    <div>
-                                        <h3 className="text-white font-black text-2xl uppercase leading-tight mb-2">PROMO OPENING <br/><span className="text-gold italic underline">DISKON 50%</span></h3>
-                                        <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest">Hanya untuk 20 pendaftar pertama.</p>
-                                    </div>
-                                    <div className="text-right">
-                                        <div className="text-slate-500 line-through text-xl font-black opacity-50">Rp 4.000.000</div>
-                                        <div className="text-white text-5xl font-black">
-                                            <span className="text-gold text-xl italic">Rp</span> 1.999<span className="text-xl text-gold">rb</span>
-                                        </div>
-                                    </div>
+                    {/* HERO */}
+                    <section className="py-20 text-center px-4">
+                        <div className="inline-block px-4 py-1 border border-gold/30 rounded-full text-gold text-[10px] font-black uppercase mb-6 tracking-widest">Pusat Pelatihan Strategis</div>
+                        <h1 className="text-5xl md:text-7xl font-black mb-6 text-white leading-tight uppercase tracking-tighter">Menuju Garis Finish <br/> Dengan <span className="text-gold">Kemenangan.</span></h1>
+                        <p className="max-w-2xl mx-auto text-slate-400 mb-10 text-sm md:text-base font-medium">Spesialis persiapan masuk TNI, POLRI, & Kedinasan. Unggul dalam Karakter, Akademik, dan Fisik melalui sistem pelatihan taktis berstandar institusi.</p>
+                        
+                        <div className="max-w-xl mx-auto glass p-8 rounded-2xl relative mb-12 border border-gold/20">
+                            <div className="absolute top-0 right-0 bg-red-600 text-white text-[10px] font-black px-4 py-1 uppercase">URGENT</div>
+                            <div className="flex items-center gap-6 mb-6">
+                                <div className="text-center">
+                                    <div className="text-[10px] uppercase text-slate-400 font-bold mb-1">Diskon</div>
+                                    <div className="text-5xl font-black text-red-500">50%</div>
                                 </div>
-
-                                {/* COUNTDOWN */}
-                                <div className="mt-8 pt-8 border-t border-white/10 grid grid-cols-4 gap-2">
-                                    {[
-                                        { v: timeLeft.days, l: 'Hari' },
-                                        { v: timeLeft.hours, l: 'Jam' },
-                                        { v: timeLeft.minutes, l: 'Menit' },
-                                        { v: timeLeft.seconds, l: 'Detik' }
-                                    ].map((t, i) => (
-                                        <div key={i} className="bg-white/5 py-3 rounded-2xl border border-white/5">
-                                            <div className="text-2xl font-black text-white">{t.v < 10 ? `0${t.v}` : t.v}</div>
-                                            <div className="text-[8px] font-bold text-slate-500 uppercase">{t.l}</div>
-                                        </div>
-                                    ))}
+                                <div className="text-left">
+                                    <div className="font-black text-xl text-white uppercase">Batch 1: Elite Squad</div>
+                                    <div className="text-xs text-slate-400 font-medium">Hanya untuk 20 Orang Pertama. Promo berakhir 1 Maret 2026.</div>
                                 </div>
                             </div>
+                            <div className="grid grid-cols-3 gap-4 border-t border-white/10 pt-6">
+                                <div><div className="text-3xl font-black text-white">18</div><div className="text-[10px] font-bold text-slate-500 uppercase">Hari</div></div>
+                                <div><div className="text-3xl font-black text-white">20</div><div className="text-[10px] font-bold text-slate-500 uppercase">Jam</div></div>
+                                <div><div className="text-3xl font-black text-white">23</div><div className="text-[10px] font-bold text-slate-500 uppercase">Menit</div></div>
+                            </div>
+                        </div>
+                        <div className="flex flex-col sm:flex-row justify-center gap-4">
+                            <button className="bg-gold text-black px-10 py-4 rounded font-black uppercase text-xs shadow-lg shadow-gold/20">Ambil Kuota Diskon</button>
+                            <button className="border border-white/20 px-10 py-4 rounded font-black uppercase text-xs text-white hover:bg-white/5 transition-all">Lihat Kurikulum</button>
                         </div>
                     </section>
 
-                    {/* 6. AI CENTER SECTION */}
-                    <section id="ai" className="py-24 px-4 bg-[#140810] border-y border-white/5">
-                        <div className="container mx-auto max-w-4xl">
-                            <div className="flex items-center gap-4 mb-12">
-                                <div className="w-12 h-12 rounded-full bg-gold flex items-center justify-center text-black shadow-lg shadow-gold/20">
-                                    <i data-lucide="bot"></i>
-                                </div>
-                                <div>
-                                    <h2 className="text-3xl font-black text-white uppercase tracking-tighter italic">Imperium Tactical AI ✨</h2>
-                                    <p className="text-[10px] text-gold font-bold uppercase tracking-widest">CAT System Simulator & Real-time Drill</p>
-                                </div>
+                    {/* AI CENTER - FIXED & WORKING */}
+                    <section id="ai" className="py-24 bg-maroon/30 border-y border-white/5 px-4">
+                        <div className="container mx-auto">
+                            <div className="text-center mb-16">
+                                <h2 className="text-4xl font-black mb-4 text-white uppercase tracking-tighter">Imperium Tactical AI ✨</h2>
+                                <p className="text-slate-400 max-w-xl mx-auto text-sm font-medium">Sistem kecerdasan buatan terintegrasi untuk simulasi soal (CAT) dan konsultasi strategi tempur secara real-time.</p>
                             </div>
-                            
-                            <div className="glass rounded-[3rem] overflow-hidden shadow-2xl p-8 md:p-12">
-                                <div className="flex justify-between items-center mb-10">
-                                    <div className="text-sm font-black text-slate-400 uppercase tracking-[0.3em]">HOTS Question Generator</div>
-                                    <button onClick={fetchNewQuestion} disabled={loading} className="bg-white/5 border border-white/10 p-3 rounded-full text-gold hover:bg-gold hover:text-black transition-all">
-                                        <i data-lucide="refresh-cw" className={loading ? "animate-spin" : ""}></i>
-                                    </button>
+                            <div className="max-w-4xl mx-auto glass rounded-3xl overflow-hidden shadow-2xl border border-gold/10">
+                                <div className="flex border-b border-white/10">
+                                    <button className="flex-1 py-5 font-black text-xs uppercase bg-gold text-black tracking-widest">Latihan Kilat</button>
+                                    <button className="flex-1 py-5 font-black text-xs uppercase text-slate-500 tracking-widest">Konsultasi Mentor</button>
                                 </div>
-
-                                <div className="min-h-[200px] mb-10">
-                                    <p className="text-white text-lg md:text-xl font-bold leading-relaxed italic border-l-4 border-gold pl-6">
-                                        "{drillData.question}"
-                                    </p>
-                                </div>
-
-                                <div className="grid gap-3">
-                                    {drillData.options.map((opt, idx) => (
-                                        <button 
-                                            key={idx} 
-                                            onClick={() => setSelectedAnswer(idx)}
-                                            className={`p-5 rounded-2xl text-left text-xs font-bold transition-all border-2 ${
-                                                selectedAnswer === idx 
-                                                ? (idx === drillData.answer ? 'border-green-500 bg-green-500/10' : 'border-red-500 bg-red-500/10')
-                                                : 'border-white/5 bg-white/5 hover:border-gold/30'
-                                            }`}
-                                        >
-                                            <span className="text-gold mr-3">{String.fromCharCode(65+idx)}.</span> {opt}
+                                <div className="p-8 md:p-12">
+                                    <div className="flex justify-between items-center mb-10">
+                                        <span className="text-gold font-black tracking-[0.2em] text-[10px] uppercase underline decoration-2 underline-offset-8">SOAL TWK</span>
+                                        <button onClick={fetchNewQuestion} disabled={loading} className="text-[10px] border border-white/20 px-6 py-2 rounded-full text-white font-black uppercase flex items-center gap-2 hover:bg-white/5 transition-all disabled:opacity-50">
+                                            <i data-lucide="refresh-cw" className={loading ? "animate-spin" : ""}></i> {loading ? "Generating..." : "Ganti Soal"}
                                         </button>
-                                    ))}
+                                    </div>
+                                    <p className="text-white text-xl md:text-2xl font-bold leading-relaxed mb-10">{drillData.question}</p>
+                                    <div className="space-y-4">
+                                        {drillData.options.map((opt, idx) => (
+                                            <div key={idx} onClick={() => setSelectedAnswer(idx)} className={`p-5 border rounded-xl cursor-pointer transition-all font-medium text-sm md:text-base ${selectedAnswer === idx ? (idx === drillData.answer ? 'border-green-500 bg-green-500/10 text-white shadow-lg shadow-green-500/10' : 'border-red-500 bg-red-500/10 text-white shadow-lg shadow-red-500/10') : 'border-white/5 text-slate-400 hover:border-gold/30 hover:bg-white/5'}`}>
+                                                {opt}
+                                            </div>
+                                        ))}
+                                    </div>
+                                    {selectedAnswer !== null && (
+                                        <div className={`mt-8 p-5 rounded-xl text-sm font-black uppercase tracking-widest border ${selectedAnswer === drillData.answer ? 'bg-green-500/20 text-green-400 border-green-500/30' : 'bg-red-500/20 text-red-400 border-red-500/30'}`}>
+                                            {selectedAnswer === drillData.answer ? "Tepat Sekali, Ndan! Pertahankan!" : "Salah! Pelajari lagi fundamentalnya, Ndan!"}
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>
                     </section>
 
-                    {/* 7. KEUNGGULAN / 4 PILAR */}
-                    <section id="program" className="py-24 container mx-auto px-6">
-                        <div className="text-center mb-16">
-                            <h2 className="text-4xl font-black text-white uppercase tracking-tighter mb-4">4 Pilar Fondasi</h2>
-                            <p className="text-slate-500 text-xs font-bold uppercase tracking-widest">Membentuk Profil Lulusan Siap Tempur</p>
+                    {/* 4 PILAR */}
+                    <section id="program" className="py-24 container mx-auto px-4">
+                        <div className="text-center mb-20">
+                            <h2 className="text-4xl font-black mb-4 text-white uppercase tracking-tighter">4 Pilar Fondasi Imperium</h2>
+                            <p className="text-slate-400 text-sm font-medium">Kami tidak hanya mengajarkan materi, kami membentuk profil lulusan yang siap pakai.</p>
                         </div>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                             {[
-                                {t: "AKADEMIK", i: "book-open", d: "TWK, TIU, TKP Standar CAT."},
-                                {t: "JASMANI", i: "dumbbell", d: "Kesemaptaan A & B Terukur.", gold: true},
-                                {t: "PSIKOTES", i: "brain", d: "Mentalitas & Stabilitas Psikologi."},
-                                {t: "MENTAL", i: "shield", d: "Disiplin & Karakter Institusi."}
+                                {t: "AKADEMIK", i: "book-open", d: "Latihan kecerdasan, ketelitian,kepribadian,kecermatan standar TNI/POLRI dan materi TWK, TIU, dan TKP melalui penjelasan logika mendalam."},
+                                {t: "JASMANI", i: "dumbbell", d: "Pembinaan fisik terukur standar kesemaptaan B & renang.", b: true},
+                                {t: "PSIKOTES", i: "brain", d: "Simulasi tes psikologi untuk membentuk mentalitas stabil."},
+                                {t: "MENTAL", i: "shield-check", d: "Indoktrinasi disiplin dan karakter kepemimpinan."}
                             ].map((item, i) => (
-                                <div key={i} className={`p-8 glass rounded-3xl text-center flex flex-col items-center transition-all hover:-translate-y-2 ${item.gold ? 'border-gold shadow-lg shadow-gold/5' : ''}`}>
-                                    <div className="text-gold mb-4"><i data-lucide={item.i} size="32"></i></div>
-                                    <h3 className="font-black text-white text-xs mb-2 tracking-widest">{item.t}</h3>
-                                    <p className="text-[9px] text-slate-500 font-bold uppercase">{item.d}</p>
+                                <div key={i} className={`p-10 glass rounded-3xl text-center flex flex-col items-center transition-all hover:translate-y-[-10px] ${item.b ? 'border-b-8 border-gold shadow-2xl shadow-gold/10' : ''}`}>
+                                    <div className="text-gold mb-6"><i data-lucide={item.i} size="40"></i></div>
+                                    <h3 className="font-black text-white mb-4 tracking-widest">{item.t}</h3>
+                                    <p className="text-[11px] text-slate-500 leading-relaxed font-bold">{item.d}</p>
                                 </div>
                             ))}
                         </div>
                     </section>
 
-                    {/* FLOATING CONTACT */}
-                    <div className="fixed bottom-6 right-6 z-[100] flex flex-col gap-4">
-                        <a href="https://wa.me/6285185443185" className="bg-green-600 text-white p-4 rounded-full shadow-2xl hover:scale-110 transition-transform">
-                            <i data-lucide="phone-call"></i>
-                        </a>
-                    </div>
+                    {/* KEUNGGULAN */}
+                    <section id="keunggulan" className="py-24 bg-maroon/20 border-y border-white/5">
+                        <div className="container mx-auto px-4 grid lg:grid-cols-2 gap-16 items-center">
+                            <div>
+                                <h2 className="text-4xl font-black mb-10 text-white uppercase tracking-tighter">Kenapa Memilih Kami?</h2>
+                                <div className="space-y-6">
+                                    {[
+                                        "Sistem Pelatihan Taktis Berstandar Institusi",
+                                        "Kelas Offline & Online Hybrid (Fleksibel)",
+                                        "Didampingi Tutor Berpengalaman & Praktisi",
+                                        "Latihan Intensif Sebelum Tes (Drilling Soal)",
+                                        "Try-Out & Evaluasi Mingguan (CAT System)",
+                                        "Monitoring Progress Real-time via WhatsApp",
+                                        "Paket E-Book Premium & Grup Diskusi Eksklusif"
+                                    ].map((list, i) => (
+                                        <div key={i} className="flex items-center gap-4 text-sm font-bold text-slate-300">
+                                            <i data-lucide="check-circle" className="text-gold shrink-0" size="20"></i> {list}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                            <div className="p-12 glass rounded-[3rem] border-l-8 border-l-gold italic text-xl text-slate-300 relative">
+                                <i data-lucide="quote" className="absolute top-6 left-6 text-gold/10" size="64"></i>
+                                "Fokus kami bukan hanya meluluskan Anda pada ujian tulis, tetapi mempersiapkan Anda bertahan dalam pendidikan kedinasan yang sebenarnya."
+                                <div className="mt-8 font-black text-white not-italic text-sm uppercase tracking-[0.2em]">— Management Imperium</div>
+                            </div>
+                        </div>
+                    </section>
+
+                    {/* PAKET BELAJAR */}
+                    <section id="fasilitas" className="py-24 container mx-auto px-4">
+                        <div className="mb-12 flex items-baseline gap-4">
+                            <span className="text-gold font-black text-4xl">01</span>
+                            <h2 className="text-4xl font-black text-white uppercase tracking-tighter">Paket Belajar Batch 1</h2>
+                        </div>
+                        <div className="grid md:grid-cols-3 gap-6 mb-20 font-bold">
+                            <div className="p-8 glass rounded-2xl border-t-4 border-gold">
+                                <h4 className="text-white mb-3 text-lg">1. Kelas Offline Intensif</h4>
+                                <p className="text-xs text-slate-500">Tatap muka langsung di markas komando.</p>
+                            </div>
+                            <div className="p-8 glass rounded-2xl border-t-4 border-gold">
+                                <h4 className="text-white mb-3 text-lg">2. Kelas Online/Zoom Live</h4>
+                                <p className="text-xs text-slate-500">Akses dari mana saja secara interaktif.</p>
+                            </div>
+                            <div className="p-8 glass rounded-2xl border-t-4 border-gold">
+                                <h4 className="text-white mb-3 text-lg">3. E-book + Akses Grup Lifetime</h4>
+                                <p className="text-xs text-slate-500">Materi dan networking tanpa batas.</p>
+                            </div>
+                        </div>
+                        <div className="text-center">
+                            <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-500 mb-6">Penawaran Spesial Berakhir Dalam:</h4>
+                            <div className="text-5xl font-black text-gold mb-10 tracking-widest">18 HARI : 20 JAM</div>
+                            <a href="https://wa.me/6285185443185" className="inline-block bg-gold text-black px-16 py-6 rounded-full font-black text-2xl hover:scale-105 transition-transform shadow-2xl shadow-gold/30 uppercase tracking-tighter">DAFTAR SEKARANG!!!</a>
+                        </div>
+                    </section>
+
+                    {/* FOOTER / LOKASI */}
+                    <footer id="lokasi" className="bg-maroon py-24 border-t border-white/10">
+                        <div className="container mx-auto px-4 grid md:grid-cols-3 gap-16">
+                            <div>
+                                <div className="font-black text-3xl tracking-tighter text-white mb-6">IMPERIUM</div>
+                                <p className="text-slate-400 text-sm leading-relaxed font-medium">Bimbel spesialis kedinasan dengan kurikulum terstruktur dan pelatih profesional. Kami siap mengantar Anda menuju seragam impian.</p>
+                            </div>
+                            <div>
+                                <h4 className="text-gold font-black uppercase text-[10px] tracking-[0.3em] mb-8">Markas Komando</h4>
+                                <div className="space-y-4 text-sm font-bold text-slate-300">
+                                    <div className="flex gap-4"><i data-lucide="map-pin" className="text-gold" size="20"></i> Ruko Trade Center Blok J no 11, Sagulung, Batam.</div>
+                                    <div className="flex gap-4"><i data-lucide="clock" className="text-gold" size="20"></i> Senin - Sabtu: 08.00 - 20.00 WIB</div>
+                                </div>
+                            </div>
+                            <div>
+                                <h4 className="text-gold font-black uppercase text-[10px] tracking-[0.3em] mb-8">Hubungi Kami</h4>
+                                <div className="space-y-6">
+                                    <div><p className="text-[10px] text-slate-500 font-black uppercase mb-1">Admin 1</p><p className="font-black text-xl text-white">0851 8544 3185</p></div>
+                                    <div><p className="text-[10px] text-slate-500 font-black uppercase mb-1">Admin 2</p><p className="font-black text-xl text-white">0859 6018 4775</p></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="container mx-auto px-4 mt-24 pt-8 border-t border-white/5 text-center text-[10px] font-black text-slate-600 tracking-[0.5em] uppercase">
+                            © 2026 Imperium Smart Class. Menuju Garis Finish.
+                        </div>
+                    </footer>
                 </div>
             );
         }
